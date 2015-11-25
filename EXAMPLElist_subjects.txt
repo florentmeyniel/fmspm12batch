@@ -1,0 +1,10 @@
+# subj01 20140909 sb120316 02 anat 03 ep2d_PA 04 ep2d_AP 07 SBRef_sess1 08 epi_sess1 09 SBRef_sess2 10 epi_sess2 11 SBRef_sess3 12 epi_sess3 13 SBRef_sess4 14 epi_sess4 15 B0_1 16 B0_2
+
+# subj02 20140910 ml140071 02 anat 03 ep2d_PA 04 ep2d_AP 05 SBRef_sess1 06 epi_sess1 07 SBRef_sess2 08 epi_sess2 09 SBRef_sess3 10 epi_sess3 11 SBRef_sess4 12 epi_sess4 13 B0_1 14 B0_2
+
+# Script to import data can be found at:
+# git clone https://github.com/chrplr/import_scans.git
+
+# Code for importing rawdata (run the command IN THE FOLDER WHERE DATA SHOULD BE IMPORTED)
+# import_subjects_from_trio -a anat -f fMRI < list_subjects.txt
+
