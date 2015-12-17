@@ -1,7 +1,5 @@
 function [matfile, matlabbatch] = fmspm12batch_preproc_sf_make1job1sub(iSub, dataloc, param)
 
-% TO IMPROVE: l. 166 : faire une boucle sur les session pour récupérer la première image automatiquement!!!
-
 % Create and save an SPM batch, for one subject, with the following 
 % preprocessing steps: 
 % - Slice Timing
@@ -29,6 +27,8 @@ voxel_size       = param.voxel_size;
 smoothing_kernel = param.smoothing_kernel;      % 1st level smoothing
 TR               = param.TR;
 slice_timing     = param.slice_timing;
+B0_TE            = param.B0_TE;                 % short and long TE, in ms, of the B0 acquisition.
+flscmd           = param.flscmd;                % fls command use to call fsl function, e.g. fsl5.0-fslroi
 
 % initialize spm
 % =========================================================================
@@ -104,23 +104,23 @@ copyfile([fdir, fname_B0_2], strcat([fdir, 'B0/', 'B0_phase_', fname_B0_2(6:end)
 % extract the short & intermediate TE with FSL
 % 1st (0) = shortest: 3.00 ms
 fname_B0mag = spm_select('List', [fdir, 'B0'], '^B0_mag.*\.nii');
-cmd = sprintf('cd %s; fsl5.0-fslroi %s %s 0 1', ...
-    [fdir, 'B0'], ...
+cmd = sprintf('cd %s; %s-fslroi %s %s 0 1', ...
+    [fdir, 'B0'], flscmd, ...
     fname_B0mag, strcat([fname_B0mag(1:7), 'shortTE_', fname_B0mag(8:end)])); 
 unix(cmd)
 fname_B0phase = spm_select('List', [fdir, 'B0'], '^B0_phase.*\.nii');
-cmd = sprintf('cd %s; fsl5.0-fslroi %s %s 0 1', ...
-    [fdir, 'B0'], ...
+cmd = sprintf('cd %s; %s-fslroi %s %s 0 1', ...
+    [fdir, 'B0'], flscmd, ...
     fname_B0phase, strcat([fname_B0phase(1:9), 'shortTE_', fname_B0phase(10:end)])); 
 unix(cmd)
 
 % 2nd (1) = intermediate: 5.46 ms
-cmd = sprintf('cd %s; fsl5.0-fslroi %s %s 1 1', ...
-     [fdir, 'B0'], ...
+cmd = sprintf('cd %s; %s-fslroi %s %s 1 1', ...
+     [fdir, 'B0'], flscmd, ...
     fname_B0mag, strcat([fname_B0mag(1:7), 'longTE_', fname_B0mag(8:end)])); 
 unix(cmd)
-cmd = sprintf('cd %s; fsl5.0-fslroi %s %s 1 1', ...
-     [fdir, 'B0'], ...
+cmd = sprintf('cd %s; %s-fslroi %s %s 1 1', ...
+     [fdir, 'B0'], flscmd, ...
     fname_B0phase, strcat([fname_B0phase(1:9), 'longTE_', fname_B0phase(10:end)])); 
 unix(cmd)
 
@@ -147,7 +147,7 @@ matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.shortphase = {fname_shortpha
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.shortmag   = {fname_shortmag};
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.longphase  = {fname_longphase};
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.longmag    = {fname_longmag};
-matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.et = [3 5.46];                     % [shortTE longTE] in ms
+matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.et = B0_TE;                        % [shortTE longTE] in ms
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.maskbrain = 1;
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.blipdir = 1;                       % +1 for P -> A (would be -1 for A -> P)
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.tert = nslices*deltaEPI/iPAT;      % EPI readout time
@@ -164,10 +164,9 @@ matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.ndilate = 4;
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.thresh = 0.5;
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.reg = 0.02;
-matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.session(1).epi = {funcfiles{1}{1}};                     % specify 1st EPI for session alignement (for quality control with a display)
-matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.session(2).epi = {funcfiles{2}{1}};                     % specify 1st EPI for session alignement (for quality control with a display)
-matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.session(3).epi = {funcfiles{3}{1}};                     % specify 1st EPI for session alignement (for quality control with a display)
-matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.session(4).epi = {funcfiles{4}{1}};                     % specify 1st EPI for session alignement (for quality control with a display)
+for irun = 1:nrun
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.session(irun).epi = {funcfiles{irun}{1}};           % specify 1st EPI for session alignement (for quality control with a display)
+end
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.matchvdm = 1;                                           % so that the VDM is aligned on the 1st EPI of each session
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.sessname = 'session';                                   % VDM file extension
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.writeunwarped = 1;

@@ -71,11 +71,31 @@ for i = 1:nrun
     funcfiles{i} = cellstr(spm_select('ExtFPList', fdir, ['^', cffiles{i}], Inf));
 end
 
-% get the movement parameter files
-movpar = cellstr(spm_select('FPList', fdir, '^rp_.*\.txt'));
-
 % get where to save the SPM.mat (full path)
 modeldir = sprintf('%sfirst_level_estimates/%s', subjdir, modelname);
+
+% GET THE MOVEMENT PARAMETER FILES
+% check that epi_ was used as a prefix during the importation of the data
+for i = 1:nrun
+    if isempty(strfind(cffiles{i}, 'epi_'))
+        error('cannot find the prefix epi_ in the file name %s', cffiles{i})
+    end
+end
+
+% get all realignemnt parameters
+all_movpar = cellstr(spm_select('FPList', fdir, '^rp_.*\.txt'));
+
+% match file name
+movpar = cell(nrun,1);
+for i = 1:nrun
+    % get the unique file identifier
+    start_ind = strfind(cffiles{i}, 'epi_') + 4;
+    FileUniqueTag = cffiles{i}(start_ind:end-4);
+    
+    % match the identifier between the realigement and functional files
+    MatchedFileInd = cellfun(@(x) ~isempty(strfind(x, FileUniqueTag)), all_movpar);
+    movpar{i} = all_movpar{MatchedFileInd};
+end
 
 % Specify design matrix
 % =========================================================================
