@@ -58,18 +58,35 @@ while ~isempty(JobList)
             JobList = [];
         end
         
-        % make command to exectute this job
-        cmdstr = [sprintf('%s -nosplash -nodesktop -r "', MatlabCmd), ...           % open Matlab
-            sprintf('tic; '), ...                                                   % tic
-            sprintf('addpath %s ; ', toolboxpath), ...                              % go into correct directory
-            sprintf('try fmspm12batch_run1job(''%s'', ''%s''); catch; end ; ', ...  % execute function of job
-            matfile{iJob}, spm_path) ...
-            sprintf('mkdir(''over_%s_%s_%d'') ; ', timestamp, JobType, iJob), ...   % make a temporary directory to signal job end
-            sprintf('toc; '), ...                                                   % toc
-            'quit' ...                                                              % close Matlab
-            '" '...
-            sprintf('> log_file_%s_%d.txt ', JobType, iJob), ...
-            '&'];
+        if strmatch(JobType, 'TopupCorrection')
+            cmdstr = [sprintf('%s -nosplash -nodesktop -r "', MatlabCmd), ...           % open Matlab
+                sprintf('tic; '), ...                                                   % tic
+                sprintf('addpath %s ; ', toolboxpath), ...                              % go into correct directory
+                sprintf(['try fmspm12batch_AddTopupCorrection_job1sub(''%s'');' ...
+                         ' catch ME; disp(getReport(ME,''extended'')); end ; '], ...    % execute function of job
+                matfile{iJob}) ...
+                sprintf('mkdir(''over_%s_%s_%d'') ; ', timestamp, JobType, iJob), ...   % make a temporary directory to signal job end
+                sprintf('toc; '), ...                                                   % toc
+                'quit' ...                                                              % close Matlab
+                '" '...
+                sprintf('> log_file_%s_%d.txt ', JobType, iJob), ...
+                '&'];
+        else
+            
+            % make command to exectute this job
+            cmdstr = [sprintf('%s -nosplash -nodesktop -r "', MatlabCmd), ...           % open Matlab
+                sprintf('tic; '), ...                                                   % tic
+                sprintf('addpath %s ; ', toolboxpath), ...                              % go into correct directory
+                sprintf(['try fmspm12batch_run1job(''%s'', ''%s'');'...
+                         ' catch ME; disp(getReport(ME,''extended'')); end ; '], ...    % execute function of job
+                matfile{iJob}, spm_path) ...
+                sprintf('mkdir(''over_%s_%s_%d'') ; ', timestamp, JobType, iJob), ...   % make a temporary directory to signal job end
+                sprintf('toc; '), ...                                                   % toc
+                'quit' ...                                                              % close Matlab
+                '" '...
+                sprintf('> log_file_%s_%d.txt ', JobType, iJob), ...
+                '&'];
+        end
         
         % execute command
         system(cmdstr);

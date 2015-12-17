@@ -1,10 +1,23 @@
-function fmspm12batch_AddTopupCorrection_job1sub(SubNum, datadir, funcdir,  anatdir, voxel_size, smoothing_kernel, spm_path)
+function fmspm12batch_AddTopupCorrection_job1sub(speciffile)
 % Function to add a topup correction just after the 'Realign and Unwrap'
 % images computed in the fmspm12batch_preproc pipeline. The corrected
 % images have the 't' in their prefix.
 % The function also run the normalization (wtua*) and smoothing (swtua*),
 % as in the standard pipeline.
 % NB: it should take 1h30 per subject.
+
+% load specification file
+sp = load(speciffile);
+
+SubNum              = sp.SubNum;
+datadir             = sp.datadir;
+funcdir             = sp.funcdir;
+anatdir             = sp.anatdir;
+voxel_size          = sp.voxel_size;
+smoothing_kernel    = sp.smoothing_kernel;
+spm_path            = sp.spm_path;
+regexp_topupref     = sp.regexp_topupref;
+TotGapEPI_sec       = sp.TotGapEPI_sec;
 
 % Get the specific info on this subject
 % initialization
@@ -25,7 +38,12 @@ B0_AP = spm_select('ExtFPList', fdir, '^ep2d_AP_.*\.nii', 1);
 B0_PA = spm_select('ExtFPList', fdir, '^ep2d_PA_.*\.nii', 1);
 
 % Identify the 1st session, after the unwrapping step
-EPIref = spm_select('ExtFPList', fdir, '^uaepi_sess1_.*\.nii', 1);
+EPIref = spm_select('ExtFPList', fdir, regexp_topupref, 1);
+
+% check that files exist
+if strcmp(B0_AP, ''); error('cannot find B0_AP file'); end
+if strcmp(B0_PA, ''); error('cannot find B0_PA file'); end
+if strcmp(EPIref, ''); error('cannot find EPIref file'); end
 
 % REALIGN THE AP & PA CALIBRATION FILE ONTO 1st EPI
 % =========================================================================
@@ -64,8 +82,8 @@ unix(cmd)
 % Create a text file with the direction of phase encoding. 
 % A>P is -1; P>A is 1 
 % (could be checked with Romain's script topup_param_from_dicom). 
-% Note that (84-1)*0.0076=0.06308, with 84 EPI and an echo time interval = 0.76ms.
-cmd = sprintf('cd %s; echo $''0 -1 0 0.06308 \n0 1 0 0.06308'' > acq_param.txt', fdir);
+% Note that (84-1)*0.00065=0.05395, with 84 EPI and an echo time interval = 0,65ms.
+cmd = sprintf('cd %s; echo $''0 -1 0 %6.5f \n0 1 0 %6.5f'' > acq_param.txt', fdir, TotGapEPI_sec, TotGapEPI_sec);
 unix(cmd)
 
 % Compute deformation with Topup (this takes ~15 minutes and only 1 CPU)
@@ -84,7 +102,7 @@ unix(cmd)
 fprintf('\n Apply the topup correction... Sess:')
 
 % List the unwrapped EPI, with ua prefix
-uaEPI = cellstr(spm_select('List', fdir, '^uaepi_sess.*\.nii'));
+uaEPI = cellstr(spm_select('List', fdir, '^uaepi_.*\.nii'));
 
 for iFile = 1:numel(uaEPI)
     fprintf(' %d', iFile)
