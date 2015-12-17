@@ -30,7 +30,11 @@ for iSub = 1:numel(sublist)
     for iReg = 1:nRegOns
         iCount = iCount + 1;
         RegName{iCount} = dmcond.names{iReg};
-        nRegPmod = numel(dmcond.pmod(iReg).name);
+        if ~isfield(dmcond.pmod(iReg), 'name') || isempty(dmcond.pmod(iReg).name)
+            nRegPmod = 0;
+        else
+            nRegPmod = numel(dmcond.pmod(iReg).name);
+        end
         for iRegPmod = 1:nRegPmod
             iCount = iCount + 1;
             RegName{iCount} = [dmcond.names{iReg}, ' * ', dmcond.pmod(iReg).name{iRegPmod}];
