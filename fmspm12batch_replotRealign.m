@@ -2,7 +2,7 @@ function fmspm12batch_replotRealign(dirname, spm_dir)
 % Function to load the files with realignment parameters, and plot them in
 % the 'SPM style'.
 % 
-% fpmsp12batch_replotRealign(dirname, spm_dir)
+% fmspm12batch_replotRealign(dirname, spm_dir)
 %   dirname: path to folder where the realignment files can be found
 %   spm_dir: root directory of spm.
 
