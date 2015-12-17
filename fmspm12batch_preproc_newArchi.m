@@ -20,7 +20,7 @@ for iSub = 1:length(sublist)
     
     % list preprocessed files to move (sw*.nii)
     orign_subjdir = sprintf('%s/subj%02.0f/%s/', datadir, sublist(iSub), 'fMRI');
-    flist = cellstr(spm_select('List', orign_subjdir, '^sw.*\.nii'));
+    flist = cellstr(spm_select('List', orign_subjdir, '^swt.*\.nii'));
     
     % make a new directory
     target_subjdir = sprintf('%s/subj%02.0f/%s/', newdirname, sublist(iSub), 'preprocEPI');
@@ -28,7 +28,7 @@ for iSub = 1:length(sublist)
         mkdir(target_subjdir)
     end
     
-    % copy files
+    % move files
     for iFile = 1:length(flist)
         movefile([orign_subjdir, flist{iFile}], [target_subjdir, flist{iFile}])
     end
