@@ -2,6 +2,7 @@
 =======================================================
 With the script by Christophe Pallier (to be run on Neurospin workstations)
 1) create manually a parameter file, saved as 'list_subjects.txt' (example provided in EXAMPLEpreproc_paramfile.m)
+NB: the session to analyze must be labelled with the prefix epi_ . The reason is that functional files will have the form XXXepi_YYY.nii (with XXX the preprocessing prefixes and YYY the specific file name, whatever the length) and realignment parameters will have the form rp_aepi_YYY.txt; functional files will be matched with realignment files based on the YYY which is unique to a given session. Not using epi_ as a prefix in the import step will mess up the identification of this unique YYY tag in later steps.
 2) run the command IN THE FOLDER WHERE DATA SHOULD BE IMPORTED:
 # import_subjects_from_trio -a anat -f fMRI < list_subjects.txt
 3) check that FieldMap for magnitude data has 'B0_1' in the file name; and that the phase data has 'B0_2' in the file name.
@@ -21,6 +22,8 @@ With the help of the fmspm12batch
 		> revolution [1.5 1.5 1.5]
 	ii) extract surface: Render > Extract Surface
 
+NB: the routine retreive TR and slice timing automatically, but assuming that functional acquisitions all have the same parameters!!
+
 3rd step: first level analysis
 ==============================
 1) specify the parameter file, modelname_paramfile.m
@@ -35,5 +38,12 @@ With the help of the fmspm12batch
 
 BEWARE: CHECK THAT THESE ROUTINES ARE STILL VALID WITH SUBJECT NUMBER >9 (pb of 01 1 10 order...)
 
-dans fmspm12batch_preproc_sf_make1job1sub:
-% TO IMPROVE: l. 166 : faire une boucle sur les session pour récupérer la première image automatiquement!!!
+TO DO:
+% To improve in add top up correction: 
+% (1) - fsl command from the paramfile
+% (2) - compute l. 73 automatically -> OK
+% (3) - parallelize
+% (4) - make it an option of the main pipeline (and not something that must be run, again)
+% (5) - the reference slice for realignment should be an option. -> ok
+% => 2 step for commit: first = 1; 2; 5. Second: 3; 5 
+

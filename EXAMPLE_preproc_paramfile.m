@@ -16,16 +16,25 @@
 % Option for distributed computing
 useparallel.do   = 0;               % 1 to run in parallel, 0 to run serially
 useparallel.max  = 6;               % maximum number of batch launched in parallel
-useparallel.cmd  = 'matlab-R2013a'; % command to invoke matlab from a terminal
+useparallel.cmd  = 'matlab-R2015a'; % command to invoke matlab from a terminal
+
+% fsl command
+flscmd           = 'fsl5.0';        % fls command use to call fsl functions, e.g. fsl5.0-fslroi
 
 % subject list
 sublist          = 1:2;
 nSub             = length(sublist);
 
 % actions to perform
-% Possible actions are: 'run'
-% Note that 'run' runs the specified batched (without 'run', the batch is simply saved)
-actions          = {'run'};
+% Possible actions are: 'standard' (slice timing, realign & unwrap based on
+% a B0 file, i.e. a field map correction, normalize anat, corregister EPI
+% and anat, normalize EPI, smooth EPI), 'AddTopup' (must be run after or
+% together with 'standard': it stard from the realign & unwrap files and
+% apply a second unwrapping for distortion due to the fast acquisition with
+% AP/PA distortions, then corregister EPI with anat, normalize and smooth),
+% 'run' to run the specified batch.
+% Note that without 'run', the batch is simply saved.
+actions          = {'run', 'standard', 'AddTopup'};
 
 % locate the data
 spm_path         = '/volatile/meyniel/toolbox/matlab/spm12';
@@ -34,12 +43,14 @@ regexp_func      = '^epi.*\.nii';                    % regular expression to rec
 regexp_anat      = '^anat.*\.nii';                   % regular expression to recognize T1
 funcdir          =  'fMRI';                          % path of fMRI data (4D nifti) within subject directory
 anatdir          =  'anat';                          % path of anatomical image within subject directory
+regexp_topupref  = '^uaepi_sess1_.*\.nii';           % regular expression to recognize the reference session used by FSL to realign the AP / PA volumes
 
 % acquisition parameters
-nslices          = 84;                               % number of slices. in the dicom header: hdr{1}.Private_0019_100a
+nslices          = 84;                               % number of slices (can be retrieved by fmspm12batch_preproc_GetSliceTiming_NS)
 deltaEPI         = 0.76;                             % readout between 2 EPI in ms ('Ecart echo' in the Siemens PDF)
 iPAT             = 2;                                % EPI acceleration
-voxel_size       = [1.5 1.5 1.5];		     % in mm
+voxel_size       = [1.5 1.5 1.5];                    % in mm
+B0_TE            = [3.02 5.46];                      % short and long TE, in ms, of the B0 acquisition.
 
 % pre-processing parameters
 smoothing_kernel = [5 5 5];                          % 1st level smoothing
