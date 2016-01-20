@@ -38,12 +38,47 @@ NB: the routine retreive TR and slice timing automatically, but assuming that fu
 
 BEWARE: CHECK THAT THESE ROUTINES ARE STILL VALID WITH SUBJECT NUMBER >9 (pb of 01 1 10 order...)
 
-TO DO:
-% To improve in add top up correction: 
-% (1) - fsl command from the paramfile
-% (2) - compute l. 73 automatically -> OK
-% (3) - parallelize
-% (4) - make it an option of the main pipeline (and not something that must be run, again)
-% (5) - the reference slice for realignment should be an option. -> ok
-% => 2 step for commit: first = 1; 2; 5. Second: 3; 5 
+List of functions
+=================
+To run the preprocessing:
+fmspm12batch_AddTopupCorrection_job1sub.m
+fmspm12batch_preproc_GetSliceTiming_NS.m
+fmspm12batch_preproc.m
+fmspm12batch_preproc_newArchi.m
+fmspm12batch_preproc_sf_make1job1sub.m
+
+To run the 1st level analysis:
+fmspm12batch_1stlevel_contrast.m
+fmspm12batch_1stlevel_specify_sf_make1job1sub.m
+
+To run the 2nd level analysis:
+fmspm12batch_2ndLevelCorr.m
+fmspm12batch_2ndlevel.m
+fmspm12batch_2ndlevel_WriteBatch_Classicalttest.m
+
+To run jobs:
+fmspm12batch_run1job.m
+fmspm12batch_runParalleljobs.m
+
+Other independent tools:
+> fmspm12batch_CheckContrastSpecif.m
+> fmspm12batch_CheckROI.m
+> fmspm12batch_CompareRes.m
+> fmspm12batch_GetClusterCoord.m
+review results from multiple subjects
+> fmspm12batch_multipleIndiv.m
+> fmspm12batch_multipleMIP.m
+> fmspm12batch_multipleRender.m
+> fmspm12batch_multipleSlices.m
+PhyPI
+> fmspm12batch_PhyPI_script.m
+> fmspm12batch_PhyPI_v2_script.m
+fmspm12batch_replotRealign.m
+fmspm12batch_reviewDesign.m
+
+
+
+
+
+
 
