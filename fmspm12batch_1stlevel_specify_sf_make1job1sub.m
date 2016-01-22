@@ -47,7 +47,6 @@ end
 % =========================================================================
 addpath(spm_path)
 spm('defaults', 'FMRI');
-spm_jobman('initcfg');
 
 
 % Get the data files

@@ -36,7 +36,7 @@ spm_jobman('initcfg');
 
 % check that job exist
 if ~iscell(jobfile) 
-    if ~ischar(jobfile) 
+    if ischar(jobfile) 
         if ~exist(jobfile)
             error(sprintf('this jobfile does not exist: \n%d\n', jobfile))
         end
