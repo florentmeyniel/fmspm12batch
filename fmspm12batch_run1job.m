@@ -1,8 +1,8 @@
 function fmspm12batch_run1job(jobfile, spm_path)
 % Run an SPM job
 % syntax: fmspm12batch_run1job(jobfile, spm_path)
-% 	jobfile: if a string of the .mat (e.g. 'toto.mat')
-% 	         it can include the full path
+% 	jobfile: maybe a matlab cell, or file name (string) of its .mat 
+%            (e.g. 'toto.mat' in it is in the current working directory)
 % 	spm_path (optional): SPM toolbox directory
 % 
 % NB: to avoid SPM figures, this function may be run in 
@@ -35,8 +35,14 @@ spm('defaults', 'FMRI');
 spm_jobman('initcfg');
 
 % check that job exist
-if ~exist(jobfile)
-    error(sprintf('this jobfile does not exist: \n%d\n', jobfile))
+if ~iscell(jobfile) 
+    if ~ischar(jobfile) 
+        if ~exist(jobfile)
+            error(sprintf('this jobfile does not exist: \n%d\n', jobfile))
+        end
+    else
+        error('jobfile must be a matlab cell or string')
+    end
 end
 
 % launch batch
