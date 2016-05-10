@@ -17,7 +17,7 @@ subjdir = sprintf('%s/subj%02.0f/%s/', datadir, iSub, funcdir);
 if nargin < 5
 
 % Find NIP and date of aquisition
-% Assume that all file name follows the pattern *_NIP_subDate_*.nii, 
+% Assume that all file names follow the pattern *_NIP_subDate_*.nii, 
 % with NIP made of 2 letters and 6 digits, and subDate made of 8 digits. 
 % File names have this form when they are imported with Christophe 
 % Pallier's script.
