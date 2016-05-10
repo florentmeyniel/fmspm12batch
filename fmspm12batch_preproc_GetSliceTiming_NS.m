@@ -16,11 +16,17 @@ subjdir = sprintf('%s/subj%02.0f/%s/', datadir, iSub, funcdir);
 
 if nargin < 5
 
-% get subject NIP and date
-fname = spm_select('List', subjdir, '^B0_1_.*\.nii');
-ind_ = strfind(fname, '_');
-subID = fname(ind_(2)+1:ind_(3)-1);
-subDate = fname(ind_(3)+1:ind_(4)-1);
+% Find NIP and date of aquisition
+% Assume that all file name follows the pattern *_NIP_subDate_*.nii, 
+% with NIP made of 2 letters and 6 digits, and subDate made of 8 digits. 
+% File names have this form when they are imported with Christophe 
+% Pallier's script.
+fname = spm_select('List', subjdir, '^*\.nii');
+fname = deblank(fname(1,:));
+ind = regexp(fname, '\_[a-z]{2}\d{6}\_');
+if isempty(ind) || numel(ind) > 1; error('cannot find NIP'); end;
+NIP = fname(ind+1:ind+8);
+subDate = fname(ind+10:ind+17);
 
 % go into folder on the neurospin server
 if str2double(subDate(1:4)) > 2015 || (str2double(subDate(1:4)) == 2015 && str2double(subDate(1:4))>= 11)
@@ -30,7 +36,7 @@ else
     % data recorder before 2015/11 are on the Trio repository
     base_ns = ['/neurospin/acquisition/database/TrioTim/', subDate];
 end
-dname = dir([base_ns, '/', subID, '*']);
+dname = dir([base_ns, '/', NIP, '*']);
 dname = dname.name;
 subjdir_ns = [base_ns, '/', dname];
 
