@@ -19,7 +19,7 @@ dataloc.anatdir        = anatdir;             % path of anatomical image within 
 param.nslices          = nslices;               % number of slices
 param.deltaEPI         = deltaEPI;              % readout between 2 EPI in ms ('Ecart echo' in the Siemens PDF)
 param.iPAT             = iPAT;                  % EPI acceleration
-param.voxel_size       = voxel_size;
+param.voxel_size       = xyz_resol;
 param.smoothing_kernel = smoothing_kernel;      % 1st level smoothing
 param.B0_TE            = B0_TE;
 
