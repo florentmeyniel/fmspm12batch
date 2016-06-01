@@ -22,7 +22,7 @@ useparallel.cmd  = 'matlab-R2015a'; % command to invoke matlab from a terminal
 flscmd           = 'fsl5.0';        % fls command use to call fsl functions, e.g. fsl5.0-fslroi
 
 % subject list
-sublist          = 1:2;
+sublist          = 1;
 nSub             = length(sublist);
 
 % actions to perform
@@ -38,7 +38,7 @@ actions          = {'run', 'standard', 'AddTopup'};
 
 % locate the data
 spm_path         = '/volatile/meyniel/toolbox/matlab/spm12';
-datadir          = '/volatile/meyniel/data/MarkovConfidence_Meyniel_2014/MRI_data/raw_data';
+datadir          = '/neurospin/unicog/protocols/IRMf/Berkovitch_syntax_fMRI_2016/MRI_data/raw_data';
 regexp_func      = '^epi.*\.nii';                    % regular expression to recognize functional sessions to analyze 
 regexp_anat      = '^anat.*\.nii';                   % regular expression to recognize T1
 funcdir          =  'fMRI';                          % path of fMRI data (4D nifti) within subject directory
@@ -48,8 +48,7 @@ regexp_topupref  = '^uaepi_sess1_.*\.nii';           % regular expression to rec
 % acquisition parameters
 deltaEPI         = 0.76;                             % readout between 2 EPI in ms ('Ecart echo' in the Siemens PDF)
 iPAT             = 2;                                % EPI acceleration
-voxel_size       = [1.5 1.5 1.5];                    % in mm
-B0_TE            = [3.02 5.46];                      % short and long TE, in ms, of the B0 acquisition.
+B0_TE            = [3.02 5.46];                      % short and long TE, in ms, of the B0 acquisition. (leave empty if no BO file)
 
 % pre-processing parameters
 smoothing_kernel = [5 5 5];                          % 1st level smoothing
@@ -77,6 +76,7 @@ smoothing_kernel = [5 5 5];                          % 1st level smoothing
 slice_timing = cell(nSub, 1);
 TR = zeros(nSub, 1);
 nslices = zeros(nSub, 1);
+xyz_resol = zeros(nSub, 3);
 currdir = pwd;
 for iSub = 1:nSub
     % move to the subject's directory
@@ -85,14 +85,16 @@ for iSub = 1:nSub
     
     if ~exist('SliceTimingInfo.mat', 'file')
         % read information from the DICOM header on the server
-        [slice_timing{iSub}, TR(iSub), ~, ~, ~, nslices(iSub)] = ...
+        [slice_timing{iSub}, TR(iSub), ~, SliceThickness, ~, nslices(iSub), PixelSpacing] = ...
         fmspm12batch_preproc_GetSliceTiming_NS(sublist(iSub), funcdir, datadir, spm_path);
+        xyz_resol(iSub) = [PixelSpacing(1), PixelSpacing(2), SliceThickness];   
     else
         % read the information previously saved
         tmp = load('SliceTimingInfo.mat');
         slice_timing{iSub} = tmp.SliceTiming;
         TR(iSub) = tmp.TR;
         nslices(iSub) = tmp.nslices;
+        xyz_resol(iSub) = [tmp.PixelSpacing(1), tmp.PixelSpacing(2), tmp.SliceThickness];   
     end
 end
 cd(currdir)
@@ -133,4 +135,9 @@ end
 if length(unique(nslices)) == 1
     % all participants have the same number of slices => set it in a 1-value vector
     nslices = unique(nslices);
+end
+
+% check that resolution is the same for all subjects
+if size(unique(xyz_resol, 'rows'), 1) == 1;
+    xyz_resol = unique(xyz_resol, 'rows');
 end
