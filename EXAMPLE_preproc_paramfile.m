@@ -94,6 +94,7 @@ for iSub = 1:nSub
         TR(iSub) = tmp.TR;
     end
 end
+cd(currdir)
 
 % Check whether all participants have the same TR
 if length(unique(TR)) == 1
