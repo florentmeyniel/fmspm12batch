@@ -46,8 +46,6 @@ anatdir          =  'anat';                          % path of anatomical image 
 regexp_topupref  = '^uaepi_sess1_.*\.nii';           % regular expression to recognize the reference session used by FSL to realign the AP / PA volumes
 
 % acquisition parameters
-deltaEPI         = 0.76;                             % readout between 2 EPI in ms ('Ecart echo' in the Siemens PDF)
-iPAT             = 2;                                % EPI acceleration
 B0_TE            = [3.02 5.46];                      % short and long TE, in ms, of the B0 acquisition. (leave empty if no BO file)
 
 % pre-processing parameters
@@ -103,6 +101,8 @@ cd(currdir)
 if length(unique(TR)) == 1
     % all participants have the same TR => set it in a 1-value vector
     TR = unique(TR);
+else
+    error('different subjects have different TR')
 end
 
 % Check whether all participants have the same slice timing
@@ -117,14 +117,14 @@ if nSub > 1
         % check is the slice timing info are consistent at the 5ms resolution
         comparison = diff_ST > 5;
         if any(comparison(:))
-            warning(sprintf(['the acquisition parameters seem different over subjects...', ...
+            error(sprintf(['the acquisition parameters seem different over subjects...', ...
                 '\n slice timing deviates >5ms for at least one slice!']))
         else
             % all participants the same slice timing => set it in a vector
             slice_timing = cat_ST(1,:);
         end
     else
-        warning(sprintf(['the acquisition parameters seem different over subjects...', ...
+        error(sprintf(['the acquisition parameters seem different over subjects...', ...
             '\n at least, the number of slide per volume differ!']))
     end
 else
@@ -135,16 +135,21 @@ end
 if length(unique(nslices)) == 1
     % all participants have the same number of slices => set it in a 1-value vector
     nslices = unique(nslices);
-    
+else
+    error('different subjects have different number of slices')
 end
 
 % check that resolution is the same for all subjects
 if size(unique(xyz_resol, 'rows'), 1) == 1;
     xyz_resol = unique(xyz_resol, 'rows');
+else
+    error('different subjects have different resolutions')
 end
 
 % check that effective echo time are the same in all subjects
 if (length(unique(total_readout_time_spm)) == 1) && (length(unique(total_readout_time_fsl)) == 1)
     total_readout_time_spm = unique(total_readout_time_spm);
     total_readout_time_fsl = unique(total_readout_time_fsl);
+else
+    error('different subjects have effective reaout time of EPIs')
 end
