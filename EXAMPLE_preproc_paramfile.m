@@ -135,9 +135,16 @@ end
 if length(unique(nslices)) == 1
     % all participants have the same number of slices => set it in a 1-value vector
     nslices = unique(nslices);
+    
 end
 
 % check that resolution is the same for all subjects
 if size(unique(xyz_resol, 'rows'), 1) == 1;
     xyz_resol = unique(xyz_resol, 'rows');
+end
+
+% check that effective echo time are the same in all subjects
+if (length(unique(total_readout_time_spm)) == 1) && (length(unique(total_readout_time_fsl)) == 1)
+    total_readout_time_spm = unique(total_readout_time_spm);
+    total_readout_time_fsl = unique(total_readout_time_fsl);
 end

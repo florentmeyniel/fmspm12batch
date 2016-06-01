@@ -13,22 +13,23 @@ function [matfile, matlabbatch] = fmspm12batch_preproc_sf_make1job1sub(iSub, dat
 
 % unpack input data
 % =========================================================================
-spm_path         = dataloc.spm_path;            % spm directory  
-datadir          = dataloc.datadir;             % root directory for subject data
-regexp_func      = dataloc.regexp_func;         % regular expression to recognize functional sessions to analyze 
-regexp_anat      = dataloc.regexp_anat;         % regular expression to recognize T1
-funcdir          = dataloc.funcdir;             % path of fMRI data (4D nifti) within subject directory
-anatdir          = dataloc.anatdir;             % path of anatomical image within subject directory
+spm_path                = dataloc.spm_path;             % spm directory  
+datadir                 = dataloc.datadir;              % root directory for subject data
+regexp_func             = dataloc.regexp_func;          % regular expression to recognize functional sessions to analyze 
+regexp_anat             = dataloc.regexp_anat;          % regular expression to recognize T1
+funcdir                 = dataloc.funcdir;              % path of fMRI data (4D nifti) within subject directory
+anatdir                 = dataloc.anatdir;              % path of anatomical image within subject directory
 
-nslices          = param.nslices;               % number of slices
-deltaEPI         = param.deltaEPI;              % readout between 2 EPI in ms ('Ecart echo' in the Siemens PDF)
-iPAT             = param.iPAT;                  % EPI acceleration
-voxel_size       = param.voxel_size; 
-smoothing_kernel = param.smoothing_kernel;      % 1st level smoothing
-TR               = param.TR;
-slice_timing     = param.slice_timing;
-B0_TE            = param.B0_TE;                 % short and long TE, in ms, of the B0 acquisition.
-flscmd           = param.flscmd;                % fls command use to call fsl function, e.g. fsl5.0-fslroi
+nslices                 = param.nslices;                % number of slices
+deltaEPI                = param.deltaEPI;               % readout between 2 EPI in ms ('Ecart echo' in the Siemens PDF)
+iPAT                    = param.iPAT;                   % EPI acceleration
+voxel_size              = param.voxel_size; 
+smoothing_kernel        = param.smoothing_kernel;       % 1st level smoothing
+TR                      = param.TR;
+slice_timing            = param.slice_timing;
+B0_TE                   = param.B0_TE;                  % short and long TE, in ms, of the B0 acquisition.
+flscmd                  = param.flscmd;                 % fls command use to call fsl function, e.g. fsl5.0-fslroi
+total_readout_time_spm  = param.total_readout_time_spm; % effective readout time of EPIs
 
 % initialize spm
 % =========================================================================
@@ -150,7 +151,7 @@ matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.longmag    = {fname_longmag}
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.et = B0_TE;                        % [shortTE longTE] in ms
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.maskbrain = 1;
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.blipdir = 1;                       % +1 for P -> A (would be -1 for A -> P)
-matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.tert = nslices*deltaEPI/iPAT;      % EPI readout time
+matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.tert = total_readout_time_spm;     % EPI readout time
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.epifm = 0;                         % 0: fieldmap is not an EPI image (it is a gradiant echo)
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.ajm = 0;                           % no jacobian modulation (as recommanded by SPM)
 matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.uflags.method = 'Mark3D';

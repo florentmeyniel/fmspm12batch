@@ -9,19 +9,19 @@ try spm quit; end
 % Get the parameters
 eval(sprintf('%s_paramfile', paramfile));
 
-dataloc.spm_path       = spm_path;            % spm directory
-dataloc.datadir        = datadir;             % root directory for subject data
-dataloc.regexp_func    = regexp_func;         % regular expression to recognize functional sessions to analyze
-dataloc.regexp_anat    = regexp_anat;         % regular expression to recognize T1
-dataloc.funcdir        = funcdir;             % path of fMRI data (4D nifti) within subject directory
-dataloc.anatdir        = anatdir;             % path of anatomical image within subject directory
+dataloc.spm_path                = spm_path;            % spm directory
+dataloc.datadir                 = datadir;             % root directory for subject data
+dataloc.regexp_func             = regexp_func;         % regular expression to recognize functional sessions to analyze
+dataloc.regexp_anat             = regexp_anat;         % regular expression to recognize T1
+dataloc.funcdir                 = funcdir;             % path of fMRI data (4D nifti) within subject directory
+dataloc.anatdir                 = anatdir;             % path of anatomical image within subject directory
 
-param.nslices          = nslices;               % number of slices
-param.deltaEPI         = deltaEPI;              % readout between 2 EPI in ms ('Ecart echo' in the Siemens PDF)
-param.iPAT             = iPAT;                  % EPI acceleration
-param.voxel_size       = xyz_resol;
-param.smoothing_kernel = smoothing_kernel;      % 1st level smoothing
-param.B0_TE            = B0_TE;
+param.nslices                   = nslices;             % number of slices
+param.voxel_size                = xyz_resol;
+param.smoothing_kernel          = smoothing_kernel;    % 1st level smoothing
+param.B0_TE                     = B0_TE;
+param.total_readout_time_spm    = total_readout_time_spm;
+param.total_readout_time_fsl    = total_readout_time_fsl;
 
 param.flscmd           = flscmd;
 
@@ -79,8 +79,6 @@ end
 % =========================================================================
 if ismember('AddTopup', actions)
     
-    TotGapEPI_sec = (nslices-1)*deltaEPI/1000;
-    
     fprintf('\n Save Topup parameters for...')
     for iSub = 1:nSub
         fprintf('\n Subject %02.0f: %d/%d', sublist(iSub), iSub, nSub)
@@ -89,7 +87,7 @@ if ismember('AddTopup', actions)
             pwd, sublist(iSub));
         SubNum = sublist(iSub);
         save(fpath{iSub}, 'SubNum', 'datadir', 'funcdir',  'anatdir', 'voxel_size', ...
-            'smoothing_kernel', 'spm_path', 'regexp_topupref', 'TotGapEPI_sec');
+            'smoothing_kernel', 'spm_path', 'regexp_topupref', 'total_readout_time_fsl');
     end
 end
 
