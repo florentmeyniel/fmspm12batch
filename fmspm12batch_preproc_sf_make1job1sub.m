@@ -161,17 +161,16 @@ if ismember('unwrap', actions)
     matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.tert = total_readout_time_spm;     % EPI readout time
     matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.epifm = 0;                         % 0: fieldmap is not an EPI image (it is a gradiant echo)
     matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.ajm = 0;                           % no jacobian modulation (as recommanded by SPM)
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.uflags.method = 'Mark3D';
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.uflags.fwhm = 10;
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.uflags.pad = 0;
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.uflags.ws = 1;
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.template = ...
-        {[spm_path, '/toolbox/FieldMap/T1.nii']};   % for visual comparison
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.fwhm = 5;
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.nerode = 2;
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.ndilate = 4;
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.thresh = 0.5;
-    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.reg = 0.02;
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.uflags.method = pm_get_defaults('UNWRAPPING_METHOD');
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.uflags.fwhm = pm_get_defaults('FWHM');
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.uflags.pad = pm_get_defaults('PAS');
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.uflags.ws = pm_get_defaults('WS');
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.template = pm_get_defaults('MFLAGS.TEMPLATE');
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.fwhm = pm_get_defaults('MFLAGS.FWHM');
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.nerode = pm_get_defaults('MFLAGS.NERODE');
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.ndilate = pm_get_defaults('MFLAGS.NDILATE');
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.thresh = pm_get_defaults('MFLAGS.THRESH');
+    matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.defaults.defaultsval.mflags.reg = pm_get_defaults('MFLAGS.REG');
     for irun = 1:nrun
         matlabbatch{stage}.spm.tools.fieldmap.phasemag.subj.session(irun).epi = {funcfiles{irun}{1}};           % specify 1st EPI for session alignement (for quality control with a display)
     end
@@ -209,27 +208,27 @@ if ismember('unwrap', actions)
             substruct('()',{1}, '.','vdmfile', '{}',{iRun}));
     end
     
-    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
-    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.sep = 4;
-    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
-    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.rtm = 0;
-    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.einterp = 2;
+    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.quality = spm_get_defaults('realign.estimate.quality');
+    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.sep = spm_get_defaults('realign.estimate.sep');
+    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.fwhm = spm_get_defaults('realign.estimate.fwhm');
+    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.rtm = spm_get_defaults('realign.estimate.rtm');
+    matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.einterp = spm_get_defaults('realign.estimate.interp');
     matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.ewrap = [0 1 0];                                      % wraping along the Y axis (because acquisition in PA direction)
     matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.weight = '';
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.basfcn = [12 12];
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.regorder = 1;
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.lambda = 100000;
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.jm = 0;
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.fot = [4 5];
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.sot = [];
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.uwfwhm = 4;
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.rem = 1;
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.noi = 5;
-    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.expround = 'Average';
-    matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.uwwhich = [2 1];
-    matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.rinterp = 4;
-    matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.wrap = [0 1 0];
-    matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.mask = 1;
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.basfcn = spm_get_defaults('unwarp.estimate.basfcn');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.regorder = spm_get_defaults('unwarp.estimate.regorder');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.lambda = spm_get_defaults('unwarp.estimate.regwgt');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.jm = spm_get_defaults('unwarp.estimate.jm');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.fot = spm_get_defaults('unwarp.estimate.foe');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.sot = spm_get_defaults('unwarp.estimate.soe');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.uwfwhm = spm_get_defaults('unwarp.estimate.fwhm');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.rem = spm_get_defaults('unwarp.estimate.rem');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.noi = spm_get_defaults('unwarp.estimate.noi');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uweoptions.expround = spm_get_defaults('unwarp.estimate.expround');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.uwwhich = spm_get_defaults('realign.write.which');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.rinterp = spm_get_defaults('realign.write.interp');
+    matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.wrap = [0 1 0]; % wraping along the Y axis (because acquisition in PA direction)
+    matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.mask = spm_get_defaults('realign.write.mask');
     matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.prefix = 'u';
 end
 
@@ -254,17 +253,19 @@ if ismember('realign', actions)
         matlabbatch{stage}.spm.spatial.realign.estwrite.data{iRun} = afflist{iRun};
     end
     
-    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.quality = 0.9;
-    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.sep = 4;
-    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.fwhm = 5;
-    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.rtm = 0;               % register to 1st
-    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.interp = 2;
+    
+    
+    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.quality = spm_get_defaults('realign.estimate.quality');
+    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.sep = spm_get_defaults('realign.estimate.quality');
+    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.fwhm = spm_get_defaults('realign.estimate.fwhm');
+    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.rtm = spm_get_defaults('realign.estimate.rtm');               % register to 1st
+    matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.interp = spm_get_defaults('realign.estimate.interp');
     matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.wrap = [0 1 0];        % wraping along the Y axis (because acquisition in PA direction)
     matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.weight = '';
-    matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.which = [2 1];
-    matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.interp = 4;
+    matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.which = spm_get_defaults('realign.write.which');
+    matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.interp = spm_get_defaults('realign.write.interp');
     matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.wrap = [0 1 0];        % wraping along the Y axis (because acquisition in PA direction)
-    matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.mask = 1;
+    matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.mask = spm_get_defaults('realign.write.mask');
     matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.prefix = 'r';
     
 end
@@ -286,25 +287,25 @@ if ismember('segmentnormalize', actions)
     
     matlabbatch{stage}.spm.spatial.preproc.channel.vols = { anatfile };
     matlabbatch{stage}.spm.spatial.preproc.warp.write = [0 1];
-    matlabbatch{stage}.spm.spatial.preproc.channel.biasreg = 0.001;
-    matlabbatch{stage}.spm.spatial.preproc.channel.biasfwhm = 60;
-    matlabbatch{stage}.spm.spatial.preproc.channel.write = [0 1];
+    matlabbatch{stage}.spm.spatial.preproc.channel.biasreg = 0.001; % light regularisation (suggest by default)
+    matlabbatch{stage}.spm.spatial.preproc.channel.biasfwhm = 60; % cutoff in mm (suggest by default)
+    matlabbatch{stage}.spm.spatial.preproc.channel.write = [0 1]; % save bias corrected image
     ngaus  = [1 1 2 3 4 2];
     native = [1 1 1 0 0 0];
-    for c = 1:6 % tissue class c
+    for c = 1:6 % tissue class c (values suggest by default)
         matlabbatch{stage}.spm.spatial.preproc.tissue(c).tpm = {
             fullfile(spm('dir'), 'tpm', sprintf('TPM.nii,%d', c))};
         matlabbatch{stage}.spm.spatial.preproc.tissue(c).ngaus = ngaus(c);
         matlabbatch{stage}.spm.spatial.preproc.tissue(c).native = [native(c) 0];
         matlabbatch{stage}.spm.spatial.preproc.tissue(c).warped = [0 0];
     end
-    matlabbatch{stage}.spm.spatial.preproc.warp.mrf = 1;
-    matlabbatch{stage}.spm.spatial.preproc.warp.cleanup = 1;
-    matlabbatch{stage}.spm.spatial.preproc.warp.reg = [0 0.001 0.5 0.05 0.2];
-    matlabbatch{stage}.spm.spatial.preproc.warp.affreg = 'mni';
-    matlabbatch{stage}.spm.spatial.preproc.warp.fwhm = 0;
-    matlabbatch{stage}.spm.spatial.preproc.warp.samp = 3;
-    matlabbatch{stage}.spm.spatial.preproc.warp.write = [1 1];
+    matlabbatch{stage}.spm.spatial.preproc.warp.mrf = 1; % (suggest by default)
+    matlabbatch{stage}.spm.spatial.preproc.warp.cleanup = 1; % (suggest by default)
+    matlabbatch{stage}.spm.spatial.preproc.warp.reg = [0 0.001 0.5 0.05 0.2]; % (suggest by default)
+    matlabbatch{stage}.spm.spatial.preproc.warp.affreg = 'mni'; % (suggest by default)
+    matlabbatch{stage}.spm.spatial.preproc.warp.fwhm = 0; % (suggest by default)
+    matlabbatch{stage}.spm.spatial.preproc.warp.samp = 3; % (suggest by default)
+    matlabbatch{stage}.spm.spatial.preproc.warp.write = [1 1]; % write the forward & inverse deformation fields
     
     % Get directory of bias corrected image to use for brain image
     stage = stage + 1;
@@ -365,11 +366,10 @@ if ismember('segmentnormalize', actions)
     matlabbatch{stage}.spm.spatial.coreg.estimate.ref(1)            = {ImCalBrain};
     matlabbatch{stage}.spm.spatial.coreg.estimate.source(1)         = {EPIref};
     matlabbatch{stage}.spm.spatial.coreg.estimate.other             = OtherEPI;
-    matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
-    matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.sep      = [4 2];
-    matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.tol      = ...
-        [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
-    matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.fwhm     = [7 7];
+    matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.cost_fun = spm_get_defaults('coreg.estimate.cost_fun');
+    matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.sep      = spm_get_defaults('coreg.estimate.sep');
+    matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.tol      = spm_get_defaults('coreg.estimate.tol');
+    matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.fwhm     = spm_get_defaults('coreg.estimate.fwhm');
     
     
     % Spatial normalisation of EPIs, given the normalized segmentation (and its
@@ -384,10 +384,9 @@ if ismember('segmentnormalize', actions)
             substruct('.','val', '{}',{stage_segmentation}, '.','val', '{}',{1}, '.','val', '{}',{1}), ...
             substruct('.','fordef', '()',{':'}));
     matlabbatch{stage}.spm.spatial.normalise.write.subj.resample    = OtherEPI;
-    matlabbatch{stage}.spm.spatial.normalise.write.woptions.bb      = [-78 -112 -70
-                                                                        78 76 85];
+    matlabbatch{stage}.spm.spatial.normalise.write.woptions.bb      = spm_get_defaults('normalise.write.bb');
     matlabbatch{stage}.spm.spatial.normalise.write.woptions.vox     = voxel_size;
-    matlabbatch{stage}.spm.spatial.normalise.write.woptions.interp  = 4;
+    matlabbatch{stage}.spm.spatial.normalise.write.woptions.interp  = spm_get_defaults('normalise.write.interp');
     
     
     % Spatial normalization of anat, given the normalized segmentation (and its
@@ -399,10 +398,9 @@ if ismember('segmentnormalize', actions)
     
     matlabbatch{stage}.spm.spatial.normalise.write.subj.def         = {ForwardDef};
     matlabbatch{stage}.spm.spatial.normalise.write.subj.resample(1) = {ImCalBrain};
-    matlabbatch{stage}.spm.spatial.normalise.write.woptions.bb      = [-78 -112 -70
-        78 76 85];
+    matlabbatch{stage}.spm.spatial.normalise.write.woptions.bb      = spm_get_defaults('normalise.write.bb');
     matlabbatch{stage}.spm.spatial.normalise.write.woptions.vox     = [1 1 1];
-    matlabbatch{stage}.spm.spatial.normalise.write.woptions.interp  = 4;
+    matlabbatch{stage}.spm.spatial.normalise.write.woptions.interp  = spm_get_defaults('normalise.write.interp');
 end
 
 % =========================================================================
@@ -424,8 +422,8 @@ if ismember('smooth', actions)
     
     matlabbatch{stage}.spm.spatial.smooth.data                      = NormEPIs;
     matlabbatch{stage}.spm.spatial.smooth.fwhm                      = smoothing_kernel;
-    matlabbatch{stage}.spm.spatial.smooth.dtype                     = 0;
-    matlabbatch{stage}.spm.spatial.smooth.im                        = 0;
+    matlabbatch{stage}.spm.spatial.smooth.dtype                     = 0; % output data type = same as input
+    matlabbatch{stage}.spm.spatial.smooth.im                        = 0; % no implicit masking
     matlabbatch{stage}.spm.spatial.smooth.prefix                    = 's';
 end
 
