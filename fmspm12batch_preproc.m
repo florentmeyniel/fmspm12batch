@@ -49,7 +49,7 @@ if ~strcmp(paramfile, 'RecursiveMode')
     
     param.flscmd                    = flscmd;
     
-    param.actions                   = lower(actions);
+    param.actions                   = actions;
 else
     % use parameter from input arguments
     param = varargin{2};
