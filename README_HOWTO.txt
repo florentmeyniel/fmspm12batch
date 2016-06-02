@@ -76,9 +76,10 @@ PhyPI
 fmspm12batch_replotRealign.m
 fmspm12batch_reviewDesign.m
 
-
-
-
-
+SHOULD BE IMPROVED
+==================
+-> when the topup correction is used, the coregistration should be with the mean (topup correct, realigned) and not the 1st EPI. The 1st EPI should serve as a reference only for the realign step.
+-> the B0 field map correction should be optional => with TOPUP, it already corrects a lot, but need to tweak the coregistration, relign, etc. NB: actually, it is not clear that topup correct for motion induced distortion... so it may be a bad idea to have realignment (with optional unwrap) and then topup.
+-> make the phase encoding direction an input parameter: matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.ewrap (currently it is necessarily Y).
 
 

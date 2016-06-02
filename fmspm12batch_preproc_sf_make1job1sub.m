@@ -50,7 +50,7 @@ stage = 0;
 subjdir = sprintf('%s/subj%02.0f/', datadir, iSub);
 
 % Get T1 file to analyze
-adir =  sprintf('%s/%s/', subjdir, anatdir);
+adir =  sprintf('%s%s/', subjdir, anatdir);
 anatfile = spm_select('FPList', adir, regexp_anat);
 if isequal(anatfile,  '')
     error('No anat file found for %s', iSub)
@@ -89,11 +89,11 @@ if ismember('slicetiming', actions)
 end
 
 % =========================================================================
-%                           RELALIGN
+%                           REALIGN
 % =========================================================================
 
 % OPTION 1: realign and unrwrap with a field map
-if ismember('unwrap', actions)
+if ismember('unwarp', actions)
     stage = stage + 1;
     stage_fieldmap = stage;
     
@@ -198,7 +198,7 @@ if ismember('unwrap', actions)
     % of the 1st session, which is not a problem since the 1st scan of the different
     % sessions are first aligned to each other.
     stage = stage + 1;
-    clear realignunwrap
+    clear realignunwarp
     
     if ismember('slicetiming', actions)
         prefix = 'a';
@@ -252,9 +252,9 @@ if ismember('realign', actions)
     clear estwrite
     % get prefix of files, depending on previous processing steps
     if ismember('slicetiming', actions)
-        prefix = '^a';
+        prefix = 'a';
     else
-        prefix = '^';
+        prefix = '';
     end
     
     for iRun = 1:nrun
@@ -361,13 +361,13 @@ if ismember('segmentnormalize', actions)
     
     % coregistration: mean EPI to Brain
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    % (using SPM default parameters)
     
     % get the calculated anatomical brain image for this subject
     ImCalBrain = [adir, 'Brain.nii,1'];
     
     % get EPIs
     % List the EPI, with ua prefix
+    prefix = '';
     if  ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'tra'; end
     if ~ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'tr';  end
     if  ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'tua'; end
@@ -379,12 +379,22 @@ if ismember('segmentnormalize', actions)
     OtherEPI = AddPrefix(funcfiles, prefix);
     
     % compute mean image
-    to do
+    stage = stage + 1;
+    matlabbatch{stage}.spm.util.imcalc.input            = vertcat(OtherEPI{:});
+    matlabbatch{stage}.spm.util.imcalc.output           = 'mean_preproc_EPI';
+    matlabbatch{stage}.spm.util.imcalc.outdir           = {fdir};
+    matlabbatch{stage}.spm.util.imcalc.expression       = 'mean(X)';
+    matlabbatch{stage}.spm.util.imcalc.var              = struct('name', {}, 'value', {});
+    matlabbatch{stage}.spm.util.imcalc.options.dmtx     = 1; % read images as matrix
+    matlabbatch{stage}.spm.util.imcalc.options.mask     = 0; % no masking
+    matlabbatch{stage}.spm.util.imcalc.options.interp   = 1;
+    matlabbatch{stage}.spm.util.imcalc.options.dtype    = 4;
     
     stage = stage + 1;
+    OtherEPI = AddPrefix(cffiles, prefix);
     clear coreg
     coreg.estimate.ref(1)            = {ImCalBrain};
-    coreg.estimate.source(1)         = {EPIref};
+    coreg.estimate.source(1)         = {[fdir, 'mean_preproc_EPI.nii,1']};
     coreg.estimate.other             = OtherEPI;
     coreg.estimate.eoptions.cost_fun = spm_get_defaults('coreg.estimate.cost_fun');
     coreg.estimate.eoptions.sep      = spm_get_defaults('coreg.estimate.sep');
@@ -397,14 +407,13 @@ if ismember('segmentnormalize', actions)
     % Spatial normalisation of EPIs, given the normalized segmentation (and its
     % affine transformation)
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    % (using SPM default parameters)
+    
+    % get (previously computed) deformation field
+    ForwardDef = [adir, 'y_', spm_select('List', adir, regexp_anat)];
     
     stage = stage + 1;
     
-    matlabbatch{stage}.spm.spatial.normalise.write.subj.def(1) = ...
-        cfg_dep('Segment: Forward Deformations', ...
-        substruct('.','val', '{}',{stage_segmentation}, '.','val', '{}',{1}, '.','val', '{}',{1}), ...
-        substruct('.','fordef', '()',{':'}));
+    matlabbatch{stage}.spm.spatial.normalise.write.subj.def         = {ForwardDef};
     matlabbatch{stage}.spm.spatial.normalise.write.subj.resample    = OtherEPI;
     matlabbatch{stage}.spm.spatial.normalise.write.woptions.bb      = spm_get_defaults('normalise.write.bb');
     matlabbatch{stage}.spm.spatial.normalise.write.woptions.vox     = voxel_size;
@@ -414,7 +423,6 @@ if ismember('segmentnormalize', actions)
     % Spatial normalization of anat, given the normalized segmentation (and its
     % affine transformation)
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    % (using SPM default parameters)
     
     stage = stage + 1;
     

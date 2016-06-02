@@ -1,7 +1,14 @@
 function fmspm12batch_preproc(varargin)
 % Function to write preprocessing batches, as specified by the input
-% script that define parameters.
-% This function also run (in parallel if specified) the batch.
+% script that defines parameters.
+% This function also runs (in parallel if specified) the batch.
+%
+% Usage: fmspm12batch_preproc('my_model')
+%   this will read input parameter from the file my_model_paramfile.m
+%
+% NB: the function also supports a different syntax. This alternative syntax
+% is for the purpose of the batch system, and not for the user.
+%   fmspm12batch_preproc('RecursiveMode', param, dataloc)
 
 % quit spm if open
 try spm quit; end
@@ -13,7 +20,11 @@ else
     paramfile = varargin{1};
 end
 if ~strcmp(paramfile, 'RecursiveMode')
+    
     % load parameters from file
+    if ~exist(sprintf('%s_paramfile', paramfile), 'file')
+        error('cannot find the parameter files: %s', sprintf('%s_paramfile', paramfile))
+    end
     eval(sprintf('%s_paramfile', paramfile));
     
     dataloc.spm_path                = spm_path;            % spm directory
@@ -22,14 +33,19 @@ if ~strcmp(paramfile, 'RecursiveMode')
     dataloc.regexp_anat             = regexp_anat;         % regular expression to recognize T1
     dataloc.funcdir                 = funcdir;             % path of fMRI data (4D nifti) within subject directory
     dataloc.anatdir                 = anatdir;             % path of anatomical image within subject directory
+    dataloc.regexp_topupref         = regexp_topupref;     % regular expression to recognize the functional to realign the field maps files.
     
-    param.TR                        = TR;
+    param.TR                        = TR;                  % acquisition TR
     param.nslices                   = nslices;             % number of slices
-    param.voxel_size                = xyz_resol;
+    param.slice_timing              = slice_timing;        % exact slice timing 
+    param.voxel_size                = xyz_resol;           % [x y z] resolution, mm
     param.smoothing_kernel          = smoothing_kernel;    % 1st level smoothing
-    param.B0_TE                     = B0_TE;
+    param.B0_TE                     = B0_TE;               % TE of B0 from unwarpping [long, short] ms
     param.total_readout_time_spm    = total_readout_time_spm;
     param.total_readout_time_fsl    = total_readout_time_fsl;
+    param.sublist                   = sublist; 
+    param.nSub                      = nSub;
+    param.useparallel               = useparallel;
     
     param.flscmd                    = flscmd;
     
@@ -38,12 +54,15 @@ else
     % use parameter from input arguments
     param = varargin{2};
     dataloc = varargin{3};
+    actions = param.actions;
+    nSub = param.nSub;
+    sublist = param.sublist;
 end
-sub_actions = {sub_actions{:}, 'slicetiming'}
-sub_actions = [sub_actions, {'slicetiming'}]
 
 % SPECIFICATION OF THE BATCH
 % =========================================================================
+
+% MAKE A DISTINCTION BETWEEN TOPUP AND THE OTHER STEPS. RELAUNCH SEPARATELY
 if ismember('topup', actions)
     
     % DO ALL ACTIONS BEFORE TOPUP
@@ -93,11 +112,13 @@ if ismember('topup', actions)
     end
     dataloc.regexp_func = ['^', prefix, dataloc.regexp_func(2:end)];
     if ~isempty(sub_actions)
-        param.actions = {sub_actions{:}, 'run'};
+        param.actions = [sub_actions, {'run'}];
         fmspm12batch_preproc('RecursiveMode', param, dataloc)
     end
-    
-else
+end
+
+% RUN ALL STEPS EXCEPT TOPUP
+if ~ismember('topup', actions) && ~ismember('AddTopupStep', actions)
     
     fprintf('\n Create batch for PREPROCESSING')    
     matfile = cell(nSub, 1); % full path of saved job
@@ -111,7 +132,7 @@ else
     if ismember('run', actions)
         fprintf('\n Run batch for PREPROCESSING')
         
-        if useparallel.do == 0
+        if param.useparallel.do == 0
             
             % run batch serially
             for iSub = 1:nSub
@@ -122,18 +143,25 @@ else
                 fmspm12batch_run1job(matfile{iSub}, dataloc.spm_path)
             end
             
-        elseif useparallel.do == 1
+        elseif param.useparallel.do == 1
             
             % run batches in parallel
             fmspm12batch_runParalleljobs(matfile, dataloc.spm_path, ...
-                useparallel.max, useparallel.cmd)
+                param.useparallel.max, param.useparallel.cmd)
         end
     end
 end
 
-% DEAL WITH EXTRA TOPUP CORRECTION
-% =========================================================================
+% RUN THE TOPUP STEP
 if ismember('AddTopupStep', actions)
+    
+    % get values
+    datadir                 = dataloc.datadir;
+    funcdir                 = dataloc.funcdir; 
+    spm_path                = dataloc.spm_path;
+    regexp_topupref         = dataloc.regexp_topupref;
+    total_readout_time_fsl  = param.total_readout_time_fsl;
+    regexp_func             = dataloc.regexp_func;
     
     fprintf('\n Save Topup parameters for...')
     for iSub = 1:nSub
@@ -142,11 +170,11 @@ if ismember('AddTopupStep', actions)
         fpath{iSub} = sprintf('%s/batch_specif_sub%02.0f_TopupCorrection.mat', ...
             pwd, sublist(iSub));
         SubNum = sublist(iSub);
-        save(fpath{iSub}, 'SubNum', 'datadir', 'funcdir', ...
+        save(fpath{iSub}, 'SubNum', 'datadir', 'funcdir', 'regexp_func', ...
             'spm_path', 'regexp_topupref', 'total_readout_time_fsl');
     end
     
-    if useparallel.do == 0
+    if param.useparallel.do == 0
         
         % run batch serially
         fprintf('\n Run...')
@@ -158,10 +186,10 @@ if ismember('AddTopupStep', actions)
             fmspm12batch_AddTopupCorrection_job1sub(fpath{iSub})
         end
         
-    elseif useparallel.do == 1
+    elseif param.useparallel.do == 1
         
         % run batches in parallel
         fmspm12batch_runParalleljobs(fpath, dataloc.spm_path, ...
-            useparallel.max, useparallel.cmd)
+            param.useparallel.max, param.useparallel.cmd)
     end
 end

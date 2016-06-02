@@ -116,5 +116,6 @@ fname = [subjdir, 'SliceTimingInfo.mat'];
 if exist(fname)
     delete(fname); fprintf('\nremove previous SliceTimingInfo.mat\n')
 end
-save(fname, 'SliceTiming', 'TR', 'TE', 'SliceThickness', 'SpacingBetweenSlices', 'NumberOfSlices')
+save(fname, 'SliceTiming', 'TR', 'TE', 'SliceThickness', 'SpacingBetweenSlices', ...
+    'NumberOfSlices', 'PixelSpacing', 'total_readout_time_spm', 'total_readout_time_fsl')
 

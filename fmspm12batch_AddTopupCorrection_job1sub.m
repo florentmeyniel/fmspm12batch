@@ -13,6 +13,7 @@ SubNum                  = sp.SubNum;
 datadir                 = sp.datadir;
 funcdir                 = sp.funcdir;
 spm_path                = sp.spm_path;
+regexp_func             = sp.regexp_func;
 regexp_topupref         = sp.regexp_topupref;
 total_readout_time_fsl  = sp.total_readout_time_fsl;
 
@@ -82,38 +83,42 @@ cmd = sprintf('cd %s; echo $''0 -1 0 %6.5f \n0 1 0 %6.5f'' > acq_param.txt', ...
                 fdir, total_readout_time_fsl, total_readout_time_fsl);
 unix(cmd)
 
-% Compute deformation with Topup (this takes ~15 minutes and only 1 CPU)
+% Compute deformation with Topup (this takes ~20 minutes and only 1 CPU)
 % The result that will be used is APPA_DefMap
 % For sanity checks, sanitycheck_DefMap is the deformation field and
 % sanitycheck_unwarped_B0 are the corrected images
+% NB: in the b02b0.cnf, subsamp starts =2, which implies that the size
+% of the image cannot be an odd number. Here we force subsampling =1.
 fprintf('\n Compute the APPA deformation with Topup')
 cmd = sprintf(['cd %s; fsl5.0-topup ', ...
     '--imain=b0_APPA --datain=acq_param.txt --config=b02b0.cnf ', ...
-    '--out=APPA_DefMap --fout=sanitycheck_DefMap --iout=sanitycheck_unwarped_B0'], ...
+    '--out=APPA_DefMap --fout=sanitycheck_DefMap --iout=sanitycheck_unwarped_B0 ', ...
+    '--subsamp=1,1,1,1,1,1,1,1,1'], ...
     fdir);
+fprintf('\n'); fprintf(cmd); fprintf('\n');
 unix(cmd)
 
 % APPLY THE CORRECTION
 % =========================================================================
-fprintf('\n Apply the topup correction... Sess:')
+fprintf('\n Apply the topup correction...')
 
 % List the unwrapped EPI, with ua prefix
-uaEPI = cellstr(spm_select('List', fdir, '^uaepi_.*\.nii'));
+EPI = cellstr(spm_select('List', fdir, regexp_func));
 
-for iFile = 1:numel(uaEPI)
-    fprintf(' %d', iFile)
+for iFile = 1:numel(EPI)
+    fprintf('\n  Sess: %d/%d', iFile, numel(EPI))
     % Make the topup command to apply the correction
     % the 't' prefix is added to the output file
     cmd = sprintf(['cd %s; fsl5.0-applytopup --imain=%s ', ...
         '--inindex=2 ', ...                                      % because the EPIs are in PA, the 2nd row of the acq_param.txt file
         '--topup=APPA_DefMap --datain=acq_param.txt ', ...
         '--out=%s --method=jac'], ...
-        fdir, uaEPI{iFile}(1:end-4), ['t', uaEPI{iFile}(1:end-4)]);
+        fdir, EPI{iFile}(1:end-4), ['t', EPI{iFile}(1:end-4)]);
     unix(cmd)
     
     % Conver the results from .nii.gz to .nii
     cmd = sprintf('cd %s; fsl5.0-fslchfiletype NIFTI %s', ...
-        fdir, ['t', uaEPI{iFile}(1:end-4)]);
+        fdir, ['t', EPI{iFile}(1:end-4)]);
     unix(cmd)
 end
 fprintf('\n')
