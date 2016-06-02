@@ -48,8 +48,8 @@ actions          = {'run', 'slicetiming', 'realign', 'topup', 'segmentnormalize'
 spm_path         = '/volatile/meyniel/toolbox/matlab/spm12';
 datadir          = '/neurospin/unicog/protocols/IRMf/Berkovitch_syntax_fMRI_2016/MRI_data/raw_data/test_florent/';
 
-regexp_func      = 'epi.*\.nii';                    % regular expression to recognize functional sessions to analyze 
-regexp_anat      = '^anat.*\.nii';                  % regular expression to recognize T1
+regexp_func      = '^epi.*\.nii';                   % regular expression to recognize functional sessions to analyze (the ^ is mandatory)
+regexp_anat      = '^anat.*\.nii';                  % regular expression to recognize T1 (the ^ is mandatory)
 funcdir          =  'fMRI';                         % path of fMRI data (4D nifti) within subject directory
 anatdir          =  'anat';                         % path of anatomical image within subject directory
 regexp_topupref  = '^raepi_sess1_.*\.nii';          % functional session onto which field map files are aligned
