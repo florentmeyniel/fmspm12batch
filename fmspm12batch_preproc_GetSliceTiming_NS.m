@@ -97,7 +97,7 @@ PixelSpacing = hdr{1}.PixelSpacing; % [x, y] resolution in mm
 %   SPM counts from start of first echo to end of last echo (= exactly the echo time)
 %   FLS counts from the middel of first echo to end of last echo.
 %
-% NB: FLS (topup guide) say that we should count with the number of
+% NB: FSL (topup guide) say that we should count with the number of
 % "reconstructed" echos, not the actual one (in other words, which should
 % not care about the GRAPPA factor).
 
