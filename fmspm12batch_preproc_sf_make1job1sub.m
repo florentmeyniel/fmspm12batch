@@ -31,7 +31,7 @@ flscmd                  = param.flscmd;                 % fls command use to cal
 total_readout_time_spm  = param.total_readout_time_spm; % effective readout time of EPIs
 total_readout_time_fsl  = param.total_readout_time_fsl; % effective readout time of EPIs
 
-actions =               = param.actions
+actions                 = param.actions;
 
 % =========================================================================
 %                           INITIALIZE SPM
@@ -52,8 +52,7 @@ subjdir = sprintf('%s/subj%02.0f/', datadir, iSub);
 adir =  sprintf('%s/%s/', subjdir, anatdir);
 anatfile = spm_select('FPList', adir, regexp_anat);
 if isequal(anatfile,  '')
-    warning(sprintf('No anat file found for %s', ...
-        subjects{csubj}))
+    warning(sprintf('No anat file found for %s', iSub))
     return
 end
 
@@ -62,8 +61,7 @@ fdir =  sprintf('%s%s/', subjdir, funcdir);
 ffiles = spm_select('List', fdir, regexp_func);
 nrun = size(ffiles,1);
 if nrun == 0
-    warning(sprintf('No functional file found for %s', ...
-        subjects{csubj}))
+    warning(sprintf('No functional file found for %s', iSub))
     return
 end
 funcfiles = cell(nrun, 1);
@@ -77,15 +75,14 @@ end
 % =========================================================================
 if ismember('slicetiming', actions)
     stage = stage + 1;
-    stage_slicetiming = stage;
     
-    matlabbatch{1}.spm.temporal.st.scans = { funcfiles{:} };
-    matlabbatch{1}.spm.temporal.st.nslices = nslices;
-    matlabbatch{1}.spm.temporal.st.tr = TR;
-    matlabbatch{1}.spm.temporal.st.ta = 0;              % TA can be left to 0 if slice timing is explit (as ms, not order)
-    matlabbatch{1}.spm.temporal.st.so = slice_timing;
-    matlabbatch{1}.spm.temporal.st.refslice = 0;        % reference slice is actually ref. time (in ms) because slice times are provided.
-    matlabbatch{1}.spm.temporal.st.prefix = 'a';
+    matlabbatch{stage}.spm.temporal.st.scans = { funcfiles{:} };
+    matlabbatch{stage}.spm.temporal.st.nslices = nslices;
+    matlabbatch{stage}.spm.temporal.st.tr = TR;
+    matlabbatch{stage}.spm.temporal.st.ta = 0;              % TA can be left to 0 if slice timing is explit (as ms, not order)
+    matlabbatch{stage}.spm.temporal.st.so = slice_timing;
+    matlabbatch{stage}.spm.temporal.st.refslice = 0;        % reference slice is actually ref. time (in ms) because slice times are provided.
+    matlabbatch{stage}.spm.temporal.st.prefix = 'a';
 end
 
 % =========================================================================
@@ -196,13 +193,16 @@ if ismember('unwrap', actions)
     stage = stage + 1;
     
     if ismember('slicetiming', actions)
-        prefix = '^a';
+        prefix = 'a';
     else
-        prefix = '^';
+        prefix = '';
     end
-    for iRun = 1:nrun % 
-        matlabbatch{stage}.spm.spatial.realignunwarp.data(iRun).scans = ...
-            cellstr(spm_select('ExtFPList', fdir, [prefix, cffiles{iRun}], Inf));
+    for iRun = 1:nrun
+        % add prefix to file, depending on previous preprocessing steps
+        afflist = AddPrefix(fflist, prefix);
+        
+        % list files for each session
+        matlabbatch{stage}.spm.spatial.realignunwarp.data(iRun).scans = afflist{iRun};
         matlabbatch{stage}.spm.spatial.realignunwarp.data(iRun).pmscan(1) = ...
             cfg_dep(sprintf('Phase and Magnitude Data: Voxel displacement map (Subj 1, Session %d)', iRun), ...
             substruct('.','val', '{}',{stage_fieldmap}, '.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), ...
@@ -233,6 +233,8 @@ if ismember('unwrap', actions)
     matlabbatch{stage}.spm.spatial.realignunwarp.uwroptions.prefix = 'u';
 end
 
+% Simple re-alignment
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if ismember('realign', actions)
     
     stage = stage + 1;
@@ -244,10 +246,12 @@ if ismember('realign', actions)
         prefix = '^';
     end
     
-    
     for iRun = 1:nrun
-        matlabbatch{stage}.spm.spatial.realign.estwrite.data{iRun} = ...
-            cellstr(spm_select('ExtFPList', fdir, [prefix, cffiles{i}], Inf));
+        % add prefix to file, depending on previous preprocessing steps
+        afflist = AddPrefix(funcfiles, prefix);
+        
+        % list files for each session
+        matlabbatch{stage}.spm.spatial.realign.estwrite.data{iRun} = afflist{iRun};
     end
     
     matlabbatch{stage}.spm.spatial.realign.estwrite.eoptions.quality = 0.9;
@@ -262,118 +266,7 @@ if ismember('realign', actions)
     matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.wrap = [0 1 0];        % wraping along the Y axis (because acquisition in PA direction)
     matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.mask = 1;
     matlabbatch{stage}.spm.spatial.realign.estwrite.roptions.prefix = 'r';
-
-end
-
-% =========================================================================
-%                               TOPUP
-% =========================================================================
-if ismember('topup', actions)
-    % Get subject directory (with anat & fMRI)
-    subjdir = sprintf('%s/subj%02.0f/', datadir, SubNum);
-    adir =  sprintf('%s/%s/', subjdir, anatdir);
-    fdir =  sprintf('%s%s/', subjdir, funcdir);
     
-    % Identify the AP PA file for calibrating the deformation, with the nii
-    % extention ,1
-    B0_AP = spm_select('ExtFPList', fdir, '^ep2d_AP_.*\.nii', 1);
-    B0_PA = spm_select('ExtFPList', fdir, '^ep2d_PA_.*\.nii', 1);
-    
-    % Identify the 1st session, after the unwrapping step
-    EPIref = spm_select('ExtFPList', fdir, regexp_topupref, 1);
-    
-    % check that files exist
-    if strcmp(B0_AP, ''); error('cannot find B0_AP file'); end
-    if strcmp(B0_PA, ''); error('cannot find B0_PA file'); end
-    if strcmp(EPIref, ''); error('cannot find EPIref file'); end
-    
-    % Realign the AP & PA calibration file onto 1st EPI
-    % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    % Make the SPM batch
-    clear estwrite matlabbatch
-    estwrite.data               = {{EPIref}, {B0_AP}, {B0_PA}}';
-    estwrite.eoptions.quality   = spm_get_defaults('realign.estimate.quality');
-    estwrite.eoptions.sep       = spm_get_defaults('realign.estimate.sep');
-    estwrite.eoptions.fwhm      = spm_get_defaults('realign.estimate.fwhm');
-    estwrite.eoptions.rtm       = 0;            % register to 1st
-    estwrite.eoptions.interp    = spm_get_defaults('realign.estimate.interp');
-    estwrite.eoptions.wrap      = [0 0 0];      % no wraping (because phase encoding is different!)
-    estwrite.eoptions.weight    = '';           % no weighting
-    estwrite.roptions.which     = [1 0];        % Do not reslice the 1st image
-    estwrite.roptions.interp    = spm_get_defaults('realign.write.interp');
-    estwrite.roptions.wrap      = [0 0 0];      % no wraping (because phase encoding is different!)
-    estwrite.roptions.mask      = 1;            % mask with voxel that are not 0s
-    estwrite.roptions.prefix    = 'r';          % prefix
-    
-    matlabbatch{1}.spm.spatial.realign.estwrite = estwrite;
-    
-    % Run the job
-    spm_jobman('run', matlabbatch);
-    
-    % Estimate the deformation map with FSL & TOPUP
-    % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    % Merge the realigned AP & PA nii files in the same file with .nii.gz format
-    B0_AP = spm_select('List', fdir, '^rep2d_AP_.*\.nii');
-    B0_PA = spm_select('List', fdir, '^rep2d_PA_.*\.nii');
-    cmd = sprintf('cd %s; fsl5.0-fslmerge -t b0_APPA %s %s', ...
-        fdir, B0_AP(1:end-4), B0_PA(1:end-4));
-    unix(cmd)
-    
-    % Create a text file with the direction of phase encoding.
-    % A>P is -1; P>A is 1
-    % (could be checked with Romain's script topup_param_from_dicom).
-    cmd = sprintf('cd %s; echo $''0 -1 0 %6.5f \n0 1 0 %6.5f'' > acq_param.txt', fdir, total_readout_time_fsl, total_readout_time_fsl);
-    unix(cmd)
-    
-    % Compute deformation with Topup (this takes ~15 minutes and only 1 CPU)
-    % The result that will be used is APPA_DefMap
-    % For sanity checks, sanitycheck_DefMap is the deformation field and
-    % sanitycheck_unwarped_B0 are the corrected images
-    fprintf('\n Compute the APPA deformation with Topup')
-    cmd = sprintf(['cd %s; fsl5.0-topup ', ...
-        '--imain=b0_APPA --datain=acq_param.txt --config=b02b0.cnf ', ...
-        '--out=APPA_DefMap --fout=sanitycheck_DefMap --iout=sanitycheck_unwarped_B0'], ...
-        fdir);
-    unix(cmd)
-    
-    % Apply the topup correction 
-    % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    fprintf('\n Apply the topup correction... Sess:')
-    
-    % List the EPI, with ua prefix
-    if ismember('SliceTiming', actions) && ismember('Realign', actions)
-        prefix = '^raepi';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('Realign', actions)
-        prefix = '^repi';
-    end
-    if ismember('SliceTiming', actions) && ismember('unwrap', actions)
-        prefix = '^uaepi';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('unwrap', actions)
-        prefix = '^uepi';
-    end
-    uaEPI = cellstr(spm_select('List', fdir, [prefix, '_.*\.nii']));
-    
-    for iFile = 1:numel(uaEPI)
-        fprintf(' %d', iFile)
-        % Make the topup command to apply the correction
-        % the 't' prefix is added to the output file
-        cmd = sprintf(['cd %s; fsl5.0-applytopup --imain=%s ', ...
-            '--inindex=2 ', ...                                      % because the EPIs are in PA, the 2nd row of the acq_param.txt file
-            '--topup=APPA_DefMap --datain=acq_param.txt ', ...
-            '--out=%s --method=jac'], ...
-            fdir, uaEPI{iFile}(1:end-4), ['t', uaEPI{iFile}(1:end-4)]);
-        unix(cmd)
-        
-        % Conver the results from .nii.gz to .nii
-        cmd = sprintf('cd %s; fsl5.0-fslchfiletype NIFTI %s', ...
-            fdir, ['t', uaEPI{iFile}(1:end-4)]);
-        unix(cmd)
-    end
-    fprintf('\n')
 end
 
 % =========================================================================
@@ -387,7 +280,7 @@ if ismember('segmentnormalize', actions)
     % computing an affine transformation
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     % (using SPM default parameters)
-
+    
     stage = stage + 1;
     stage_segmentation = stage;
     
@@ -453,41 +346,24 @@ if ismember('segmentnormalize', actions)
     % (using SPM default parameters)
     
     % get the calculated anatomical brain image for this subject
-    ImCalBrain = spm_select('ExtFPList', adir, '^Brain.*\.nii', 1);
+    ImCalBrain = [adir, 'Brain.nii,1'];
     
     % get EPIs
     % List the EPI, with ua prefix
-    if ismember('SliceTiming', actions) && ismember('Realign', actions) && ismember('topup', actions)
-        prefix = '^tra';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('Realign', actions) && ismember('topup', actions)
-        prefix = '^tr';
-    end
-    if ismember('SliceTiming', actions) && ismember('unwrap', actions) && ismember('topup', actions)
-        prefix = '^tua';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('unwrap', actions) && ismember('topup', actions)
-        prefix = '^tu';
-    end
-    if ismember('SliceTiming', actions) && ismember('Realign', actions) && ~ismember('topup', actions)
-        prefix = '^ra';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('Realign', actions) && ~ismember('topup', actions)
-        prefix = '^r';
-    end
-    if ismember('SliceTiming', actions) && ismember('unwrap', actions) && ~ismember('topup', actions)
-        prefix = '^ua';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('unwrap', actions) && ~ismember('topup', actions)
-        prefix = '^u';
-    end
-    OtherEPI = cellstr(spm_select('FPList', fdir, [prefix, regexp_func(2:end)])); 
+    if  ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'tra'; end
+    if ~ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'tr';  end
+    if  ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'tua'; end
+    if ~ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'tu';  end
+    if  ismember('slicetiming', actions) && ismember('realign', actions) && ~ismember('topup', actions); prefix = 'ra';  end
+    if ~ismember('slicetiming', actions) && ismember('realign', actions) && ~ismember('topup', actions); prefix = 'r';   end
+    if  ismember('slicetiming', actions) && ismember('unwrap', actions)  && ~ismember('topup', actions); prefix = 'ua';  end
+    if ~ismember('slicetiming', actions) && ismember('unwrap', actions)  && ~ismember('topup', actions); prefix = 'u';   end
+    OtherEPI = AddPrefix(funcfiles, prefix);
     
     stage = stage + 1;
     
     matlabbatch{stage}.spm.spatial.coreg.estimate.ref(1)            = {ImCalBrain};
     matlabbatch{stage}.spm.spatial.coreg.estimate.source(1)         = {EPIref};
-    
     matlabbatch{stage}.spm.spatial.coreg.estimate.other             = OtherEPI;
     matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
     matlabbatch{stage}.spm.spatial.coreg.estimate.eoptions.sep      = [4 2];
@@ -501,15 +377,15 @@ if ismember('segmentnormalize', actions)
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     % (using SPM default parameters)
     
-    % get previously computed deformation field
-    ForwardDef = spm_select('FPList', adir, '^y.*\.nii');
-    
     stage = stage + 1;
     
-    matlabbatch{stage}.spm.spatial.normalise.write.subj.def         = {ForwardDef};
+    matlabbatch{stage}.spm.spatial.normalise.write.subj.def(1) = ... 
+        cfg_dep('Segment: Forward Deformations', ...
+            substruct('.','val', '{}',{stage_segmentation}, '.','val', '{}',{1}, '.','val', '{}',{1}), ...
+            substruct('.','fordef', '()',{':'}));
     matlabbatch{stage}.spm.spatial.normalise.write.subj.resample    = OtherEPI;
     matlabbatch{stage}.spm.spatial.normalise.write.woptions.bb      = [-78 -112 -70
-        78 76 85];
+                                                                        78 76 85];
     matlabbatch{stage}.spm.spatial.normalise.write.woptions.vox     = voxel_size;
     matlabbatch{stage}.spm.spatial.normalise.write.woptions.interp  = 4;
     
@@ -536,31 +412,15 @@ if ismember('smooth', actions)
     stage = stage + 1;
     
     % get normalized EPIs
-    if ismember('SliceTiming', actions) && ismember('Realign', actions) && ismember('topup', actions)
-        prefix = '^wtra';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('Realign', actions) && ismember('topup', actions)
-        prefix = '^wtr';
-    end
-    if ismember('SliceTiming', actions) && ismember('unwrap', actions) && ismember('topup', actions)
-        prefix = '^wtua';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('unwrap', actions) && ismember('topup', actions)
-        prefix = '^wtu';
-    end
-    if ismember('SliceTiming', actions) && ismember('Realign', actions) && ~ismember('topup', actions)
-        prefix = '^wra';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('Realign', actions) && ~ismember('topup', actions)
-        prefix = '^wr';
-    end
-    if ismember('SliceTiming', actions) && ismember('unwrap', actions) && ~ismember('topup', actions)
-        prefix = '^wua';
-    end
-    if ~ismember('SliceTiming', actions) && ismember('unwrap', actions) && ~ismember('topup', actions)
-        prefix = '^wu';
-    end
-    NormEPIs = cellstr(spm_select('FPList', fdir, [prefix, regexp_func(2:end)])); 
+    if  ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'wtra'; end
+    if ~ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'wtr';  end
+    if  ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'wtua'; end
+    if ~ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'wtu';  end
+    if  ismember('slicetiming', actions) && ismember('realign', actions) && ~ismember('topup', actions); prefix = 'wra';  end
+    if ~ismember('slicetiming', actions) && ismember('realign', actions) && ~ismember('topup', actions); prefix = 'wr';   end
+    if  ismember('slicetiming', actions) && ismember('unwrap', actions)  && ~ismember('topup', actions); prefix = 'wua';  end
+    if ~ismember('slicetiming', actions) && ismember('unwrap', actions)  && ~ismember('topup', actions); prefix = 'wu';   end
+    NormEPIs = AddPrefix(funcfiles, prefix);
     
     matlabbatch{stage}.spm.spatial.smooth.data                      = NormEPIs;
     matlabbatch{stage}.spm.spatial.smooth.fwhm                      = smoothing_kernel;
@@ -580,3 +440,46 @@ fprintf('\n Writing SPM batch for subject %d:', iSub)
 fprintf('\n %s\n', matfile)
 save(matfile,'matlabbatch');
 
+end
+% ~~~~~~~~~~~~~~~~~~~~~~~  SUBFUNCTIONS  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function afflist = AddPrefix(fflist, prefix)
+% add a prefix to the file names in fflist
+
+% initialize
+afflist = cell(size(fflist));
+
+for iiRun = 1:numel(fflist)
+    
+    if size(fflist{iiRun},1) > 1
+        afflist{iiRun} = cell(size(fflist{iiRun}));
+        for iiFile = 1:numel(fflist{iiRun})
+            % get start of the file name
+            ind = strfind(fflist{iiRun}{iiFile}, '/');
+            
+            if isempty(ind)
+                % add prefix
+                afflist{iiRun}{iiFile} = [prefix, fflist{iiRun}{iiFile}];
+            else
+                ind = max(ind);
+                
+                % add prefix
+                afflist{iiRun}{iiFile} = ...
+                    [fflist{iiRun}{iiFile}(1:ind), prefix, fflist{iiRun}{iiFile}(ind+1:end)];
+            end
+        end
+    else
+        % get start of the file name
+        ind = strfind(fflist{iiRun}, '/');
+        if isempty(ind)
+            % add prefix
+            afflist{iiRun} = [prefix, fflist{iiRun}];
+        else
+            ind = max(ind);
+            % add prefix
+            afflist{iiRun} = ...
+                [fflist{iiRun}(1:ind), prefix, fflist{iiRun}(ind+1:end)];
+        end
+    end
+end
+end

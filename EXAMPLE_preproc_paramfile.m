@@ -34,7 +34,12 @@ nSub             = length(sublist);
 % AP/PA distortions, then corregister EPI with anat, normalize and smooth),
 % 'run' to run the specified batch.
 % Note that without 'run', the batch is simply saved.
-actions          = {'run', 'standard', 'AddTopup'};
+actions          = {'run', 'SliceTiming', standard', 'Topup'};
+% slicetiming or nothing
+% realign or unrwrap
+% topup or nothing
+% seg/normalize
+% smooth
 
 % locate the data
 spm_path         = '/volatile/meyniel/toolbox/matlab/spm12';
