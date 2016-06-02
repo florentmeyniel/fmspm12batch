@@ -72,13 +72,14 @@ spm_jobman('run', matlabbatch);
 B0_AP = spm_select('List', fdir, '^rep2d_AP_.*\.nii');
 B0_PA = spm_select('List', fdir, '^rep2d_PA_.*\.nii');
 cmd = sprintf('cd %s; fsl5.0-fslmerge -t b0_APPA %s %s', ...
-     fdir, B0_AP(1:end-4), B0_PA(1:end-4)); 
+                fdir, B0_AP(1:end-4), B0_PA(1:end-4)); 
 unix(cmd)
 
 % Create a text file with the direction of phase encoding. 
 % A>P is -1; P>A is 1 
 % (could be checked with Romain's script topup_param_from_dicom). 
-cmd = sprintf('cd %s; echo $''0 -1 0 %6.5f \n0 1 0 %6.5f'' > acq_param.txt', fdir, total_readout_time_fsl, total_readout_time_fsl);
+cmd = sprintf('cd %s; echo $''0 -1 0 %6.5f \n0 1 0 %6.5f'' > acq_param.txt', ...
+                fdir, total_readout_time_fsl, total_readout_time_fsl);
 unix(cmd)
 
 % Compute deformation with Topup (this takes ~15 minutes and only 1 CPU)
