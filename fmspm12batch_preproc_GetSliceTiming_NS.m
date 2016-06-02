@@ -1,13 +1,31 @@
 function [SliceTiming, TR, TE, SliceThickness, SpacingBetweenSlices, ...
             NumberOfSlices, PixelSpacing, total_readout_time_spm, total_readout_time_fsl] ...
             = fmspm12batch_preproc_GetSliceTiming_NS(iSub, funcdir, datadir, spm_path, ForceToThisDICOM)
-% Function to get (and save) the slice timing info from the Neurospin
-% server for a particular subject. The timing is read in the header of a
-% parciular dicom volume; it should not vary significantly across volume
-% and subject (the accuracy of these numbers is <5ms).
-
-% The 5th argument is optinal. If provided, it should be the full path name
-% of the DICOM file serving as reference.
+% Function to get (and save) various acquisition parameter, such as
+% RT, slice timing info... from the Neurospin server for a particular subject. 
+% The parameters are read in the header of a parciular dicom volume; theyt should 
+% not vary across volume and subject. Note that the accuracy of the slice
+% timing is numbers is <5ms).
+% 
+% To get the parameter value from an arbitrary DICOM file, use the option 5th argument 
+% to overide the search on the Neurospin server. The file name of this reference
+% DICOM file should be a full path name..
+%
+% Value returned:
+% 	SliceTiming
+% 	TR
+% 	TE
+% 	SliceThickness
+% 	SpacingBetweenSlices
+% 	NumberOfSlices
+% 	PixelSpacing (inplane resolution)
+% 	total_readout_time_spm: effective readout time of 1 EPI
+% 	total_readout_time_fsl: same with a minor difference.
+% 
+% Usage:
+% [SliceTiming, TR, TE, SliceThickness, SpacingBetweenSlices, ...
+%            NumberOfSlices, PixelSpacing, total_readout_time_spm, total_readout_time_fsl] ...
+%            = fmspm12batch_preproc_GetSliceTiming_NS(iSub, funcdir, datadir, spm_path, ForceToThisDICOM)
 
 % add spm in the path
 addpath(spm_path)

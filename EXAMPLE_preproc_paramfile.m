@@ -1,4 +1,4 @@
-% Script to set the experiment-specific pamareters for the pre-processing 
+% Script to set the experiment-specific parameters for the pre-processing 
 % of fMRI data.
 % THIS IS AN EXAMPLE SCRIPT
 
@@ -8,7 +8,7 @@
 %   /funcdir                % name specified in this parameter file        
 %   /anatdir                % name specified in this parameter file        
 % Note that subjdir is datadir/subjXX; datadir is defined below as the data
-% root directory and XX is the subject number, e.g. 1, 2, ... 20
+% root directory and XX is the subject number, e.g. 01, 02, ... 20
 
 % Specification of parameters
 % =========================================================================
@@ -40,7 +40,7 @@ nSub             = length(sublist);
 % the batch {'run', realign', 'segmentnormalize'} can start from there by
 % specifying regexp_func = '^aepi.*\.nii';
 % The order of arguments does not matter.
-actions          = {'run', 'segmentnormalize'};
+actions          = {'run', 'slicetiming', 'realign', 'topup', 'segmentnormalize', 'smooth'};
 
 % Locate the data
 % spm_path         = '/home/fm239804/toolbox/matlab/spm12';
@@ -48,11 +48,11 @@ actions          = {'run', 'segmentnormalize'};
 spm_path         = '/volatile/meyniel/toolbox/matlab/spm12';
 datadir          = '/neurospin/unicog/protocols/IRMf/Berkovitch_syntax_fMRI_2016/MRI_data/raw_data/test_florent/';
 
-regexp_func      = '^traepi.*\.nii';                 % regular expression to recognize functional sessions to analyze 
-regexp_anat      = '^anat.*\.nii';                   % regular expression to recognize T1
-funcdir          =  'fMRI';                          % path of fMRI data (4D nifti) within subject directory
-anatdir          =  'anat';                          % path of anatomical image within subject directory
-regexp_topupref  = '^raepi_sess1_.*\.nii';           % functional session onto which field map files are aligned
+regexp_func      = 'epi.*\.nii';                    % regular expression to recognize functional sessions to analyze 
+regexp_anat      = '^anat.*\.nii';                  % regular expression to recognize T1
+funcdir          =  'fMRI';                         % path of fMRI data (4D nifti) within subject directory
+anatdir          =  'anat';                         % path of anatomical image within subject directory
+regexp_topupref  = '^raepi_sess1_.*\.nii';          % functional session onto which field map files are aligned
 
 % acquisition parameters
 B0_TE            = [];                               % short and long TE, in ms, of the B0 acquisition. (leave empty if no BO file)
@@ -65,7 +65,7 @@ smoothing_kernel = [5 5 5];                          % 1st level smoothing
 % Note on slice timing 
 % --------------------
 % SPM offers the possibility to specify directly the timing of each slice
-% (which can be read from the dicom header). In this case, the acquisition
+% (which can be read from the DICOM header). In this case, the acquisition
 % time is not necessary (TA can be left to 0). This option is used in the
 % current batch to deal with the multiband acquisition.
 % Alternatively, on could specify the slice order (but this is not suitable
@@ -167,4 +167,12 @@ if (length(unique(total_readout_time_spm)) == 1) && (length(unique(total_readout
     total_readout_time_fsl = unique(total_readout_time_fsl);
 else
     error('different subjects have effective reaout time of EPIs')
+end
+
+% get that actions are recognized
+actions = lower(actions);
+for iAction = 1:numel(actions)
+    if ~ismember(actions{iAction}, {'run', 'slicetiming', 'realign', 'unwarp', 'topup', 'segmentnormalize', 'smooth'})
+        error('action ''%s'' not recognized', actions{iAction})
+    end
 end

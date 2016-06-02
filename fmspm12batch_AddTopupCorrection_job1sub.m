@@ -1,10 +1,7 @@
 function fmspm12batch_AddTopupCorrection_job1sub(speciffile)
-% Function to add a topup correction just after the 'Realign and Unwrap'
-% images computed in the fmspm12batch_preproc pipeline. The corrected
-% images have the 't' in their prefix.
-% The function also run the normalization (wtua*) and smoothing (swtua*),
-% as in the standard pipeline.
-% NB: it should take 1h30 per subject.
+% Function to add a topup correction.
+% The corrected images have 't' in their prefix.
+% NB: the topup step is time consuming...
 
 % load specification file
 sp = load(speciffile);

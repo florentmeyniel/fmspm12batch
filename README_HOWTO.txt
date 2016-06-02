@@ -11,18 +11,17 @@ NB: the session to analyze must be labelled with the prefix epi_ . The reason is
 =========================
 With the help of the fmspm12batch
 1) specify the parameter file (example provided in EXAMPLEpreproc_paramfile.m)
-2) write and run SPM batches, given this parameter file, with fmspm12batch_preproc('mypreprofile')
-2-bis) if interested, run the top-up correction in addition, with fmspm12batch_AddTopupCorrection('mypreprofile')
+2) write and run SPM batches (and also Topup), given this parameter file, with fmspm12batch_preproc('mypreprofile')
 3) check the movement parameters with fmspm12batch_replotRealign
 4) execute the fmspm12batch_preproc_newArchi to copy files into a new architecture.
 5) to extract surface (currently not in a batch): 
 	i) Normalize the extracted white & grey matter: Batch > Normalize Write
 		> deformation: y
 		> images: c1 & C2
-		> revolution [1.5 1.5 1.5]
+		> resolution [1.5 1.5 1.5]
 	ii) extract surface: Render > Extract Surface
 
-NB: the routine retreive TR and slice timing automatically, but assuming that functional acquisitions all have the same parameters!!
+NB: the routine retreive most acquisition parameters (TR, slice timing ...) automatically, from the DICOM header. 
 
 3rd step: first level analysis
 ==============================
@@ -41,11 +40,11 @@ BEWARE: CHECK THAT THESE ROUTINES ARE STILL VALID WITH SUBJECT NUMBER >9 (pb of 
 List of functions
 =================
 To run the preprocessing:
+fmspm12batch_preproc.m
+fmspm12batch_preproc_sf_make1job1sub.m
 fmspm12batch_AddTopupCorrection_job1sub.m
 fmspm12batch_preproc_GetSliceTiming_NS.m
-fmspm12batch_preproc.m
 fmspm12batch_preproc_newArchi.m
-fmspm12batch_preproc_sf_make1job1sub.m
 
 To run the 1st level analysis:
 fmspm12batch_1stlevel_contrast.m
@@ -78,8 +77,6 @@ fmspm12batch_reviewDesign.m
 
 SHOULD BE IMPROVED
 ==================
--> when the topup correction is used, the coregistration should be with the mean (topup correct, realigned) and not the 1st EPI. The 1st EPI should serve as a reference only for the realign step.
--> the B0 field map correction should be optional => with TOPUP, it already corrects a lot, but need to tweak the coregistration, relign, etc. NB: actually, it is not clear that topup correct for motion induced distortion... so it may be a bad idea to have realignment (with optional unwrap) and then topup.
 -> make the phase encoding direction an input parameter: matlabbatch{stage}.spm.spatial.realignunwarp.eoptions.ewrap (currently it is necessarily Y).
 
 

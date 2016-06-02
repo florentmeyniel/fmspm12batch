@@ -1,5 +1,4 @@
 function [matfile, matlabbatch] = fmspm12batch_preproc_sf_make1job1sub(iSub, dataloc, param)
-
 % Create and save an SPM batch, for one subject, with the following
 % preprocessing steps:
 % - Slice Timing
