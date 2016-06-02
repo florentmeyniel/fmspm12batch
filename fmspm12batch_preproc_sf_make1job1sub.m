@@ -440,6 +440,7 @@ if ismember('smooth', actions)
     stage = stage + 1;
     
     % get normalized EPIs
+    prefix = '';
     if  ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'wtra'; end
     if ~ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'wtr';  end
     if  ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'wtua'; end
@@ -450,7 +451,7 @@ if ismember('smooth', actions)
     if ~ismember('slicetiming', actions) && ismember('unwrap', actions)  && ~ismember('topup', actions); prefix = 'wu';   end
     NormEPIs = AddPrefix(funcfiles, prefix);
     
-    matlabbatch{stage}.spm.spatial.smooth.data   = NormEPIs;
+    matlabbatch{stage}.spm.spatial.smooth.data   = vertcat(NormEPIs{:});
     matlabbatch{stage}.spm.spatial.smooth.fwhm   = smoothing_kernel;
     matlabbatch{stage}.spm.spatial.smooth.dtype  = 0; % output data type = same as input
     matlabbatch{stage}.spm.spatial.smooth.im     = 0; % no implicit masking
