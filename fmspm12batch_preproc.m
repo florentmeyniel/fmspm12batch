@@ -23,7 +23,9 @@ param.B0_TE                     = B0_TE;
 param.total_readout_time_spm    = total_readout_time_spm;
 param.total_readout_time_fsl    = total_readout_time_fsl;
 
-param.flscmd           = flscmd;
+param.flscmd                    = flscmd;
+
+param.actions                   = lower(actions);
 
 % SPECIFICATION OF THE BATCH
 % =========================================================================
