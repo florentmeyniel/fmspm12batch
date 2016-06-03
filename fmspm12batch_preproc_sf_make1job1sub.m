@@ -439,14 +439,16 @@ if ismember('smooth', actions)
     
     % get normalized EPIs
     prefix = '';
-    if  ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'wtra'; end
-    if ~ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'wtr';  end
-    if  ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'wtua'; end
-    if ~ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'wtu';  end
-    if  ismember('slicetiming', actions) && ismember('realign', actions) && ~ismember('topup', actions); prefix = 'wra';  end
-    if ~ismember('slicetiming', actions) && ismember('realign', actions) && ~ismember('topup', actions); prefix = 'wr';   end
-    if  ismember('slicetiming', actions) && ismember('unwrap', actions)  && ~ismember('topup', actions); prefix = 'wua';  end
-    if ~ismember('slicetiming', actions) && ismember('unwrap', actions)  && ~ismember('topup', actions); prefix = 'wu';   end
+    if  ismember('slicetiming', actions) &&  ismember('realign', actions) &&  ismember('segmentnormalize', actions); prefix = 'wra'; end
+    if  ismember('slicetiming', actions) &&  ismember('unwrap', actions)  &&  ismember('segmentnormalize', actions); prefix = 'wua'; end
+    if ~ismember('slicetiming', actions) &&  ismember('realign', actions) &&  ismember('segmentnormalize', actions); prefix = 'wr';  end
+    if ~ismember('slicetiming', actions) &&  ismember('unwrap', actions)  &&  ismember('segmentnormalize', actions); prefix = 'wu';  end
+    if  ismember('slicetiming', actions) &&  ismember('realign', actions) && ~ismember('segmentnormalize', actions); prefix = 'ra';  end
+    if  ismember('slicetiming', actions) &&  ismember('unwrap', actions)  && ~ismember('segmentnormalize', actions); prefix = 'ua';  end
+    if ~ismember('slicetiming', actions) &&  ismember('realign', actions) && ~ismember('segmentnormalize', actions); prefix = 'r';   end
+    if ~ismember('slicetiming', actions) &&  ismember('unwrap', actions)  && ~ismember('segmentnormalize', actions); prefix = 'u';   end
+    if ~ismember('slicetiming', actions) && ~ismember('realign', actions) && ~ismember('unwrap', actions) &&  ismember('segmentnormalize', actions); prefix = 'w';   end
+    
     NormEPIs = AddPrefix(funcfiles, prefix);
     
     matlabbatch{stage}.spm.spatial.smooth.data   = vertcat(NormEPIs{:});
