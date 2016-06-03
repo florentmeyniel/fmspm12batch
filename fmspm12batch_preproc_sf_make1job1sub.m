@@ -52,7 +52,7 @@ subjdir = sprintf('%s/subj%02.0f/', datadir, iSub);
 adir =  sprintf('%s%s/', subjdir, anatdir);
 anatfile = spm_select('FPList', adir, regexp_anat);
 if isequal(anatfile,  '')
-    error('No anat file found for %s', iSub)
+    error('No anat file found for subj %d with prefix %s in %s', iSub, regexp_anat, adir)
 end
 
 % Get functional files to analyze
@@ -60,7 +60,7 @@ fdir =  sprintf('%s%s/', subjdir, funcdir);
 ffiles = spm_select('List', fdir, regexp_func);
 nrun = size(ffiles,1);
 if nrun == 0
-    error('No functional file found for %s', iSub)
+    error('No functional file found for subj %d with prefix %s in %s', iSub, regexp_func, fdir)
 end
 funcfiles = cell(nrun, 1);
 cffiles = cellstr(ffiles);
@@ -73,6 +73,7 @@ end
 % =========================================================================
 
 if ismember('slicetiming', actions)
+    fprintf('\n --> step: slice timing')
     stage = stage + 1;
     clear st
     
@@ -93,6 +94,7 @@ end
 
 % OPTION 1: realign and unrwrap with a field map
 if ismember('unwarp', actions)
+    fprintf('\n --> step: realign / unwrap')
     stage = stage + 1;
     stage_fieldmap = stage;
     
@@ -246,7 +248,7 @@ end
 % OPTION 2: Simple re-alignment
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if ismember('realign', actions)
-    
+    fprintf('\n --> step: simple realign')
     stage = stage + 1;
     clear estwrite
     % get prefix of files, depending on previous processing steps
@@ -287,7 +289,7 @@ end
 
 
 if ismember('segmentnormalize', actions)
-    
+    fprintf('\n --> step: segment & normalize')
     % Segmentation and spatially normalize anatomy with an MNI template by
     % computing an affine transformation
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -436,6 +438,7 @@ end
 %                               SMOOTH EPIs
 % =========================================================================
 if ismember('smooth', actions)
+    fprintf('\n --> step: smooth')
     stage = stage + 1;
     
     % get normalized EPIs
