@@ -367,16 +367,12 @@ if ismember('segmentnormalize', actions)
     ImCalBrain = [adir, 'Brain.nii,1'];
     
     % get EPIs
-    % List the EPI, with ua prefix
+    % List the EPIs
     prefix = '';
-    if  ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'tra'; end
-    if ~ismember('slicetiming', actions) && ismember('realign', actions) &&  ismember('topup', actions); prefix = 'tr';  end
-    if  ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'tua'; end
-    if ~ismember('slicetiming', actions) && ismember('unwrap', actions)  &&  ismember('topup', actions); prefix = 'tu';  end
-    if  ismember('slicetiming', actions) && ismember('realign', actions) && ~ismember('topup', actions); prefix = 'ra';  end
-    if ~ismember('slicetiming', actions) && ismember('realign', actions) && ~ismember('topup', actions); prefix = 'r';   end
-    if  ismember('slicetiming', actions) && ismember('unwrap', actions)  && ~ismember('topup', actions); prefix = 'ua';  end
-    if ~ismember('slicetiming', actions) && ismember('unwrap', actions)  && ~ismember('topup', actions); prefix = 'u';   end
+    if  ismember('slicetiming', actions) && ismember('realign', actions); prefix = 'ra';  end
+    if ~ismember('slicetiming', actions) && ismember('realign', actions); prefix = 'r';   end
+    if  ismember('slicetiming', actions) && ismember('unwrap', actions) ; prefix = 'ua';  end
+    if ~ismember('slicetiming', actions) && ismember('unwrap', actions) ; prefix = 'u';   end
     OtherEPI = AddPrefix(funcfiles, prefix);
     
     % compute mean image
