@@ -65,13 +65,15 @@ end
 % MAKE A DISTINCTION BETWEEN TOPUP AND THE OTHER STEPS. RELAUNCH SEPARATELY
 if ismember('topup', actions)
     
+    initial_regexp_func = dataloc.regexp_func;
+    
     % DO ALL ACTIONS BEFORE TOPUP
     sub_actions = {};
     if ismember('slicetiming', actions); sub_actions = [sub_actions, {'slicetiming'}]; end
     if ismember('realign', actions);     sub_actions = [sub_actions, {'realign'}];     end
     if ismember('unwrap', actions);      sub_actions = [sub_actions, {'unwrap'}];      end
     if ~isempty(sub_actions)
-        param.actions = {sub_actions{:}, 'run'};
+        param.actions = [sub_actions, 'run'];
         fmspm12batch_preproc('RecursiveMode', param, dataloc)
     end
     
@@ -89,7 +91,7 @@ if ismember('topup', actions)
     if ~ismember('slicetiming', actions) && ismember('unwrap', actions)
         prefix = 'u';
     end
-    dataloc.regexp_func = ['^', prefix, dataloc.regexp_func(2:end)];
+    dataloc.regexp_func = ['^', prefix, initial_regexp_func(2:end)];
     param.actions = {'AddTopupStep'};
     fmspm12batch_preproc('RecursiveMode', param, dataloc)
     
@@ -110,7 +112,7 @@ if ismember('topup', actions)
     if ~ismember('slicetiming', actions) && ismember('unwrap', actions)
         prefix = 'tu';
     end
-    dataloc.regexp_func = ['^', prefix, dataloc.regexp_func(2:end)];
+    dataloc.regexp_func = ['^', prefix, initial_regexp_func(2:end)];
     if ~isempty(sub_actions)
         param.actions = [sub_actions, {'run'}];
         fmspm12batch_preproc('RecursiveMode', param, dataloc)
