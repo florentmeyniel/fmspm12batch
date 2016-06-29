@@ -90,7 +90,7 @@ total_readout_time_fsl  = zeros(nSub, 1);
 currdir = pwd;
 for iSub = 1:nSub
     % move to the subject's directory
-    subjdir = sprintf('%s/subj%02.0f/%s/', datadir, iSub, funcdir);
+    subjdir = sprintf('%s/subj%02.0f/%s/', datadir, sublist(iSub), funcdir);
     cd(subjdir)
     
     if ~exist('SliceTimingInfo.mat', 'file')
