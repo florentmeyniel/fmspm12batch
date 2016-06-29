@@ -221,7 +221,7 @@ if ismember('unwarp', actions)
     realignunwarp.eoptions.quality      = spm_get_defaults('realign.estimate.quality');
     realignunwarp.eoptions.sep          = spm_get_defaults('realign.estimate.sep');
     realignunwarp.eoptions.fwhm         = spm_get_defaults('realign.estimate.fwhm');
-    realignunwarp.eoptions.rtm          = spm_get_defaults('realign.estimate.rtm');
+    realignunwarp.eoptions.rtm          = 0;
     realignunwarp.eoptions.einterp      = spm_get_defaults('realign.estimate.interp');
     realignunwarp.eoptions.ewrap        = [0 1 0];                                      % wraping along the Y axis (because acquisition in PA direction)
     realignunwarp.eoptions.weight       = '';
@@ -269,7 +269,7 @@ if ismember('realign', actions)
     estwrite.eoptions.quality   = spm_get_defaults('realign.estimate.quality');
     estwrite.eoptions.sep       = spm_get_defaults('realign.estimate.quality');
     estwrite.eoptions.fwhm      = spm_get_defaults('realign.estimate.fwhm');
-    estwrite.eoptions.rtm       = spm_get_defaults('realign.estimate.rtm');     % register to 1st
+    estwrite.eoptions.rtm       = 0;     					% register to 1st
     estwrite.eoptions.interp    = spm_get_defaults('realign.estimate.interp');
     estwrite.eoptions.wrap      = [0 1 0];                                      % wraping along the Y axis (because acquisition in PA direction)
     estwrite.eoptions.weight    = '';
