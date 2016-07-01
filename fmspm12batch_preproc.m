@@ -26,6 +26,13 @@ if ~strcmp(paramfile, 'RecursiveMode')
         error('cannot find the parameter files: %s', sprintf('%s_paramfile', paramfile))
     end
     eval(sprintf('%s_paramfile', paramfile));
+    if ~exist('topupOptions', 'var');
+        topupOptions.do_realign      = 1;                  % realign AP/PA file onto reference EPI
+        topupOptions.do_estimate     = 1;                  % estimate the deformation field map
+        topupOptions.do_apply        = 1;                  % apply unwrapping
+        topupOptions.par.estimatemax = 6;                  % limit parallel process for estimate
+        topupOptions.par.applymax    = 3;                  % limit parallel process for apply (take lots of RAM)
+    end
     
     dataloc.spm_path                = spm_path;            % spm directory
     dataloc.datadir                 = datadir;             % root directory for subject data
@@ -46,6 +53,7 @@ if ~strcmp(paramfile, 'RecursiveMode')
     param.sublist                   = sublist; 
     param.nSub                      = nSub;
     param.useparallel               = useparallel;
+    param.topupOptions              = topupOptions;        % specific options for Topup
     
     param.flscmd                    = flscmd;
     
@@ -157,6 +165,42 @@ end
 % RUN THE TOPUP STEP
 if ismember('AddTopupStep', actions)
     
+    if param.useparallel.do == 1 && ~isfield(param, 'TopupRecursive')
+        % TOPUP takes much more RAM that the SPM pipeline. In particular,
+        % ApplyTopup is quite memory consuming. In case jobs are launched
+        % in parallel, it can saturate memory and crash the computer. To
+        % overcome this issue, specific maximum numbers of jobs are applied.
+        
+        % use a flag to enter in a recursive mode
+        param.TopupRecursive = 1;
+        orig_topupOptions = param.topupOptions;
+        if orig_topupOptions.do_realign == 1
+            param.topupOptions.do_realign      = 1;
+            param.topupOptions.do_estimate     = 0;
+            param.topupOptions.do_apply        = 0;
+            
+            fmspm12batch_preproc('RecursiveMode', param, dataloc)
+        end
+        if orig_topupOptions.do_estimate == 1
+            param.topupOptions.do_realign      = 0;
+            param.topupOptions.do_estimate     = 1;
+            param.topupOptions.do_apply        = 0;
+            
+            param.useparallel.max = orig_topupOptions.par.estimatemax;
+            fmspm12batch_preproc('RecursiveMode', param, dataloc)
+        end
+        if orig_topupOptions.do_apply == 1
+            param.topupOptions.do_realign      = 0;
+            param.topupOptions.do_estimate     = 0;
+            param.topupOptions.do_apply        = 1;
+            
+            param.useparallel.max = orig_topupOptions.par.applymax;
+            
+            fmspm12batch_preproc('RecursiveMode', param, dataloc)
+        end
+        
+    else
+    
     % get values
     datadir                 = dataloc.datadir;
     funcdir                 = dataloc.funcdir; 
@@ -164,6 +208,7 @@ if ismember('AddTopupStep', actions)
     regexp_topupref         = dataloc.regexp_topupref;
     total_readout_time_fsl  = param.total_readout_time_fsl;
     regexp_func             = dataloc.regexp_func;
+    topupOptions            = param.topupOptions;
     
     fprintf('\n Save Topup parameters for...')
     for iSub = 1:nSub
@@ -173,7 +218,7 @@ if ismember('AddTopupStep', actions)
             pwd, sublist(iSub));
         SubNum = sublist(iSub);
         save(fpath{iSub}, 'SubNum', 'datadir', 'funcdir', 'regexp_func', ...
-            'spm_path', 'regexp_topupref', 'total_readout_time_fsl');
+            'spm_path', 'regexp_topupref', 'total_readout_time_fsl', 'topupOptions');
     end
     
     if param.useparallel.do == 0
@@ -193,5 +238,6 @@ if ismember('AddTopupStep', actions)
         % run batches in parallel
         fmspm12batch_runParalleljobs(fpath, dataloc.spm_path, ...
             param.useparallel.max, param.useparallel.cmd)
+    end
     end
 end

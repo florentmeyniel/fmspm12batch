@@ -60,6 +60,13 @@ B0_TE            = [];                               % short and long TE, in ms,
 % pre-processing parameters
 smoothing_kernel = [5 5 5];                          % 1st level smoothing
 
+% Topup options
+topupOptions.do_realign      = 1;                     % realign AP/PA file onto reference EPI
+topupOptions.do_estimate     = 1;                     % estimate the deformation field map
+topupOptions.do_apply        = 1;                     % apply unwrapping
+topupOptions.par.estimatemax = 6;                     % limit parallel process for estimate
+topupOptions.par.applymax    = 3;                     % limit parallel process for apply (take lots of RAM)
+
 % Automatically get acquisition parameters from the DICOM header
 % =========================================================================
 % Note on slice timing 
