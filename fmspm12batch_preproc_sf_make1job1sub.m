@@ -387,8 +387,13 @@ if ismember('segmentnormalize', actions)
     matlabbatch{stage}.spm.util.imcalc.options.interp   = 1;
     matlabbatch{stage}.spm.util.imcalc.options.dtype    = 4;
     
+    % coregister mean EPI and brain image
+    OtherEPI = cffiles;
+    for iSess = 1:numel(cffiles)
+        OtherEPI{iSess} = [fdir, cffiles{iSess}];
+    end
+    OtherEPI = AddPrefix(OtherEPI, prefix);             % use 4D nifti, not expanded 3D nifti
     stage = stage + 1;
-    OtherEPI = AddPrefix(cffiles, prefix);
     clear coreg
     coreg.estimate.ref(1)            = {ImCalBrain};
     coreg.estimate.source(1)         = {[fdir, 'mean_preproc_EPI.nii,1']};
@@ -461,7 +466,7 @@ end
 % =========================================================================
 %                            SAVE SPM BATCH
 % =========================================================================
-matfile = sprintf('%s/batch_preproc_sub%02.0f.mat', datadir, iSub);
+matfile = sprintf('%s/batch_sub%02.0f_preproc.mat', datadir, iSub);
 if exist(matfile, 'file')
     delete(matfile); fprintf('\nremove previous batch\n')
 end
