@@ -243,6 +243,9 @@ if ismember('unwarp', actions)
     
     matlabbatch{stage}.spm.spatial.realignunwarp = realignunwarp;
     
+    % save the functional file prefix. It will be needed later to identify
+    % the movement parameter file.
+    save([fdir, '/original_epi_prefix.mat'], 'regexp_func')
 end
 
 % OPTION 2: Simple re-alignment

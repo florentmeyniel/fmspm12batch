@@ -64,6 +64,17 @@ refslice          = 1;
 % spm_path/tpm/mask_ICV.nii,1 is a normalized, in-brain mask.
 mask              = sprintf('%s/tpm/mask_ICV.nii,1', spm_path); 
 
+% Inclusion of physiological artifacts as co-variates
+% The cardiac and respiratory phases (and interactions) can be included at
+% various order: this is the standard RETROICOR correction. In addition,
+% the heart rate variability (HR) and respiratory volume per time (RVT) may
+% also be included. Regressors were used using TAPAS during the
+% preprocessing step.
+physiocorr.include               = 1; % 1 or 0 for yes or no
+physiocorr.type                  = 'RETROICOR'; % 'RETROICOR', 'RETROICOR_HR', 'RETROICOR_RVT', 'RETROICOR_HR_RVT'
+physiocorr.opt.order_cardiac     = 3; % order of the Fourier expansion for the cardiac phase
+physiocorr.opt.order_resp        = 4; % order of the Fourier expansion for the respiratory phase
+physiocorr.opt.order_interaction = 1;
 
 % ----- 2nd level paramters -----
 

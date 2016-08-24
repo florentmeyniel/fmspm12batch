@@ -38,12 +38,23 @@ for iSub = 1:length(sublist)
     % Slice timing info
     copyfile([orign_subjdir, 'SliceTimingInfo.mat'], [target_subjdir, 'SliceTimingInfo.mat'])
     
-    movparfile = cellstr(spm_select('List', orign_subjdir, '^rp_aepi_.*\.txt'));
+    % orginial nifti prefix
+    copyfile([orign_subjdir, 'original_epi_prefix.mat'], [target_subjdir, 'original_epi_prefix.mat'])
+        
+    % movement parameters
+    movparfile = cellstr(spm_select('List', orign_subjdir, '^rp_.*\.txt'));
     for iFile = 1:length(movparfile)
         copyfile([orign_subjdir, movparfile{iFile}], ...
             [target_subjdir, movparfile{iFile}])
     end
-        
+    
+    % physiological regressors
+    physioparfile = cellstr(spm_select('List', orign_subjdir, '^physio_regressors_.*\.txt'));
+    for iFile = 1:length(physioparfile)
+        copyfile([orign_subjdir, physioparfile{iFile}], ...
+            [target_subjdir, physioparfile{iFile}])
+    end
+    
     % anat files
     % ==========
     % get file to move (sw*.nii)
