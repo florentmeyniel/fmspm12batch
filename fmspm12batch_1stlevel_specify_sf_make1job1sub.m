@@ -25,6 +25,7 @@ TR               = param.TR;                    % TR in s
 bases_functions  = param.bases_functions;       % temporal basis functions
 refslice         = param.refslice;              % reference slice for timing within a volume
 mask             = param.mask;                  % mask for estimation
+physiocorr       = param.physiocorr;            % physiological parameters
 
 % Format the temporal basis function in the SPM nomenclature
 switch bases_functions
@@ -80,7 +81,7 @@ try
     orig_regexp_func = tmp.regexp_func;
     str_start = strfind(orig_regexp_func, '^');
     str_end = strfind(orig_regexp_func, '.');
-    prefix = orig_regexp_func(str_start, str_end);
+    prefix = orig_regexp_func(str_start+1:str_end(1)-1);
 catch
     % if the original prefix is not available, try with "epi_" (it is also
     % for retro-compatibility purpose)
@@ -102,7 +103,7 @@ all_movpar = cellstr(spm_select('FPList', fdir, '^rp_.*\.txt'));
 movpar = cell(nrun,1);
 for i = 1:nrun
     % get the unique file identifier
-    start_ind = strfind(cffiles{i}, prefix) + length(prefix);
+    start_ind = strfind(cffiles{i}, prefix);
     FileUniqueTag = cffiles{i}(start_ind:end-4);
     
     % match the identifier between the realigement and functional files
@@ -113,7 +114,7 @@ end
 % ADD THE PHYSIOLOGICAL REGRESSORS FILES
 if physiocorr.include
     % get reference file for the physiological regressors
-    if ~exist([fdir, '/physio_regressors_details.mat'], 2)
+    if ~exist([fdir, '/physio_regressors_details.mat'], 'file')
         error('the reference file %s does not exist', [fdir, '/physio_regressors_details.mat'])
     else
         physio_info = load([fdir, '/physio_regressors_details.mat']);
@@ -152,7 +153,7 @@ if physiocorr.include
         % make the R matrix for SPM (the variable must be called R!!)
         % use the specified order for the RETROICOR regressors
         R = [dat_movpar, ...
-            dat_physio([...
+            dat_physio(:,[...
             1:(2*physiocorr.opt.order_cardiac), ...
             2*physiocorr.opt.order_cardiac + (1:2*physiocorr.opt.order_resp), ...
             2*(physiocorr.opt.order_cardiac+physiocorr.opt.order_resp) + (1:4*physiocorr.opt.order_interaction), ...
@@ -170,7 +171,9 @@ if physiocorr.include
         
         % save the covariates for this session so that SPM can include them
         % in the design matrix
-        data_covariate{i} = sprintf('%s/combined_covariat_%d', fdir, i);
+        fname = sprintf('%s/combined_covariat_%d.mat', fdir, i);
+        save(fname, 'R')
+        data_covariate{i} = fname;
     end
 end
 

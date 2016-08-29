@@ -27,6 +27,7 @@ dataloc.funcdir        = funcdir ;            % subfolder were EPIs are
 param.bases_functions  = bases_functions;     % temporal basis functions
 param.refslice 	       = refslice;            % reference slice in a volume
 param.mask             = mask;                % mask for estimation
+param.physiocorr       = physiocorr;          % physiological parameters
 
 % SPECIFICATION OF THE DESIGN MATRIX
 % =========================================================================
