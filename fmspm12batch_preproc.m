@@ -78,12 +78,17 @@ if ismember('retroicor', actions)
     addpath(spm_path)
     spm('defaults', 'FMRI');
     
+    fprintf('\n RUN THE TAPAS TOOLBOX')
     for iSub = 1:nSub
+        
+        fprintf('\n SUBJECT %d (%d/%d)\n session:', sublist(iSub), iSub, nSub)
+        
         % get files
-        subjdir = sprintf('%s/subj%02.0f/', datadir, sublist(iSub));
+        subjdir = sprintf('%s/subj%02.0f/%s', datadir, sublist(iSub), funcdir);
         flist = cellstr(spm_select('List', subjdir, '^*\Info.log'));
         
         for iSess = 1:numel(flist)
+            fprintf(' session %d', iSess)
             physio_regressors_computation_tapas(...
                 subjdir, ...
                 flist{iSess}(1:end-9), ...

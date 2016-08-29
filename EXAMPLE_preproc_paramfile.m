@@ -9,6 +9,15 @@
 %   /anatdir                % name specified in this parameter file        
 % Note that subjdir is datadir/subjXX; datadir is defined below as the data
 % root directory and XX is the subject number, e.g. 01, 02, ... 20
+%
+% funcfir => where fMRI data can be found (.nii) with the prefix specified
+% in this parameter file. 
+% To model physiological artifacts, funcdir should also contains several
+% files. There are 3 files per fMRI session: 
+%   XXX_Info.log        % info from the scanner
+%   XXX_PULS.log        % cardiac data
+%   XXX_RESP.log        % respiratory data
+% XXX is the name of the corresponding fMRI session: XXX.nii
 
 % Specification of parameters
 % =========================================================================
