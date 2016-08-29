@@ -17,7 +17,7 @@
 %       |_ first_level_estimates/   => where batches, beta, con, spmT, ... are saved
 %       |_ MutliCond/               => where regressors & contrast specification is saved
 %       |_ preprocAnat/             => preprocessed anatomy (for visualization)
-%       |_ preprocEPI/              => preprocessed EPIs, movement parameters and SliceTimingInfo.mat
+%       |_ preprocEPI/              => preprocessed EPIs, movement parameters (& physiological) and SliceTimingInfo.mat
 %
 %
 
