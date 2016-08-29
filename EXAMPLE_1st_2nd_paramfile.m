@@ -1,4 +1,4 @@
-% Script to set the experiment-specific pamareters for the first and
+% Script to set the experiment-specific pamareters for the first and second
 % level analysis of fMRI data.
 
 % For the batch system to work properly, a specific folder organization,
@@ -27,7 +27,7 @@
 % Option for distributed computing
 useparallel.do    = 1;               % 1 to run in parallel, 0 to run serially
 useparallel.max   = 6;               % maximum number of batch launched in parallel
-useparallel.cmd   = 'matlab-R2013a'; % command to invoke matlab from a terminal
+useparallel.cmd   = 'matlab'; % command to invoke matlab from a terminal
 
 % subject list
 sublist           = [1:11];
