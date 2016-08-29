@@ -40,6 +40,11 @@ for iSub = 1:length(sublist)
     
     % orginial nifti prefix
     copyfile([orign_subjdir, 'original_epi_prefix.mat'], [target_subjdir, 'original_epi_prefix.mat'])
+
+    % TAPAS parameters
+    try
+    copyfile([orign_subjdir, 'physio_regressors_details.mat'], [target_subjdir, 'physio_regressors_details.mat'])
+    end
         
     % movement parameters
     movparfile = cellstr(spm_select('List', orign_subjdir, '^rp_.*\.txt'));
