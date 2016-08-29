@@ -44,13 +44,13 @@ if ~strcmp(paramfile, 'RecursiveMode')
     
     param.TR                        = TR;                  % acquisition TR
     param.nslices                   = nslices;             % number of slices
-    param.slice_timing              = slice_timing;        % exact slice timing 
+    param.slice_timing              = slice_timing;        % exact slice timing
     param.voxel_size                = xyz_resol;           % [x y z] resolution, mm
     param.smoothing_kernel          = smoothing_kernel;    % 1st level smoothing
     param.B0_TE                     = B0_TE;               % TE of B0 from unwarpping [long, short] ms
     param.total_readout_time_spm    = total_readout_time_spm;
     param.total_readout_time_fsl    = total_readout_time_fsl;
-    param.sublist                   = sublist; 
+    param.sublist                   = sublist;
     param.nSub                      = nSub;
     param.useparallel               = useparallel;
     param.topupOptions              = topupOptions;        % specific options for Topup
@@ -69,6 +69,35 @@ end
 
 % SPECIFICATION OF THE BATCH
 % =========================================================================
+
+% RETROICOR step: compute the regressor of physiological artifact for
+% including in the design matrix
+if ismember('retroicor', actions)
+    % initialize
+    addpath (retroicorOptions.toolbox)
+    addpath(spm_path)
+    spm('defaults', 'FMRI');
+    
+    for iSub = 1:nSub
+        % get files
+        subjdir = sprintf('%s/subj%02.0f/', datadir, sublist(iSub));
+        flist = cellstr(spm_select('List', subjdir, '^*\Info.log'));
+        
+        for iSess = 1:numel(flist)
+            physio_regressors_computation_tapas(...
+                subjdir, ...
+                flist{iSess}(1:end-9), ...
+                retroicorOptions.order.c, ...
+                retroicorOptions.order.r, ...
+                retroicorOptions.order.cr, ...
+                retroicorOptions.verbose)
+        end
+        
+        % save the retroicor options
+        order = retroicorOptions.order;
+        save(sprintf('%s/physio_regressors_details.mat', subjdir), order)
+    end
+end
 
 % MAKE A DISTINCTION BETWEEN TOPUP AND THE OTHER STEPS. RELAUNCH SEPARATELY
 if ismember('topup', actions)
@@ -130,7 +159,7 @@ end
 % RUN ALL STEPS EXCEPT TOPUP
 if ~ismember('topup', actions) && ~ismember('AddTopupStep', actions)
     
-    fprintf('\n Create batch for PREPROCESSING')    
+    fprintf('\n Create batch for PREPROCESSING')
     matfile = cell(nSub, 1); % full path of saved job
     job     = cell(nSub, 1); % job that is saved
     
@@ -200,44 +229,44 @@ if ismember('AddTopupStep', actions)
         end
         
     else
-    
-    % get values
-    datadir                 = dataloc.datadir;
-    funcdir                 = dataloc.funcdir; 
-    spm_path                = dataloc.spm_path;
-    regexp_topupref         = dataloc.regexp_topupref;
-    total_readout_time_fsl  = param.total_readout_time_fsl;
-    regexp_func             = dataloc.regexp_func;
-    topupOptions            = param.topupOptions;
-    
-    fprintf('\n Save Topup parameters for...')
-    for iSub = 1:nSub
-        fprintf('\n Subject %02.0f: %d/%d', sublist(iSub), iSub, nSub)
         
-        fpath{iSub} = sprintf('%s/batch_specif_sub%02.0f_TopupCorrection.mat', ...
-            pwd, sublist(iSub));
-        SubNum = sublist(iSub);
-        save(fpath{iSub}, 'SubNum', 'datadir', 'funcdir', 'regexp_func', ...
-            'spm_path', 'regexp_topupref', 'total_readout_time_fsl', 'topupOptions');
-    end
-    
-    if param.useparallel.do == 0
+        % get values
+        datadir                 = dataloc.datadir;
+        funcdir                 = dataloc.funcdir;
+        spm_path                = dataloc.spm_path;
+        regexp_topupref         = dataloc.regexp_topupref;
+        total_readout_time_fsl  = param.total_readout_time_fsl;
+        regexp_func             = dataloc.regexp_func;
+        topupOptions            = param.topupOptions;
         
-        % run batch serially
-        fprintf('\n Run...')
+        fprintf('\n Save Topup parameters for...')
         for iSub = 1:nSub
+            fprintf('\n Subject %02.0f: %d/%d', sublist(iSub), iSub, nSub)
             
-            fprintf('\n batch name: %s', fpath{iSub})
-            
-            % run batch
-            fmspm12batch_AddTopupCorrection_job1sub(fpath{iSub})
+            fpath{iSub} = sprintf('%s/batch_specif_sub%02.0f_TopupCorrection.mat', ...
+                pwd, sublist(iSub));
+            SubNum = sublist(iSub);
+            save(fpath{iSub}, 'SubNum', 'datadir', 'funcdir', 'regexp_func', ...
+                'spm_path', 'regexp_topupref', 'total_readout_time_fsl', 'topupOptions');
         end
         
-    elseif param.useparallel.do == 1
-        
-        % run batches in parallel
-        fmspm12batch_runParalleljobs(fpath, dataloc.spm_path, ...
-            param.useparallel.max, param.useparallel.cmd)
-    end
+        if param.useparallel.do == 0
+            
+            % run batch serially
+            fprintf('\n Run...')
+            for iSub = 1:nSub
+                
+                fprintf('\n batch name: %s', fpath{iSub})
+                
+                % run batch
+                fmspm12batch_AddTopupCorrection_job1sub(fpath{iSub})
+            end
+            
+        elseif param.useparallel.do == 1
+            
+            % run batches in parallel
+            fmspm12batch_runParalleljobs(fpath, dataloc.spm_path, ...
+                param.useparallel.max, param.useparallel.cmd)
+        end
     end
 end

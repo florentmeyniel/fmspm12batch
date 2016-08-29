@@ -27,6 +27,7 @@ nSub             = length(sublist);
 
 % Actions to perform
 % possible actions are: 
+%   'retroicor'                                             no prefix (save text files)
 %   'slicetiming'                                           prefix 'a'
 %   'realign' or 'unrwarp' (the latter requires B0 files)   prefix 'r' and 'u' respectively
 %   'topup' (requires AP/PA files)                          prefix 't'
@@ -43,8 +44,6 @@ nSub             = length(sublist);
 actions          = {'run', 'slicetiming', 'realign', 'topup', 'segmentnormalize', 'smooth'};
 
 % Locate the data
-% spm_path         = '/home/fm239804/toolbox/matlab/spm12';
-% datadir          = '/home/fm239804/data/test_florent';
 spm_path         = '/volatile/meyniel/toolbox/matlab/spm12';
 datadir          = '/neurospin/unicog/protocols/IRMf/Berkovitch_syntax_fMRI_2016/MRI_data/raw_data/test_florent/';
 
@@ -66,6 +65,15 @@ topupOptions.do_estimate     = 1;                     % estimate the deformation
 topupOptions.do_apply        = 1;                     % apply unwrapping
 topupOptions.par.estimatemax = 6;                     % limit parallel process for estimate
 topupOptions.par.applymax    = 3;                     % limit parallel process for apply (take lots of RAM)
+
+% Retroicor options
+retroicorOptions.toolbox     = '/volatile/meyniel/tapasinstructions/PhysIO/'; % path to TAPAS toolbox
+
+% Retroicor options for advanced users
+retroicorOptions.verbose     = 0; % 0 = none; 1 = main plots (default);  2 = debugging plots, for setting up new study; 3 = all
+retroicorOptions.order.c     = 3; % order of the Fourier expansion for the cardiac phase
+retroicorOptions.order.r     = 4; % order of the Fourier expansion for the respiratory phase
+retroicorOptions.order.cr    = 1; % order of the Fourier expansion for the interaction cardiac x respiratory 
 
 % Automatically get acquisition parameters from the DICOM header
 % =========================================================================
