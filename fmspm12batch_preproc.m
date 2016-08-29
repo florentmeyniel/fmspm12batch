@@ -95,7 +95,7 @@ if ismember('retroicor', actions)
         
         % save the retroicor options
         order = retroicorOptions.order;
-        save(sprintf('%s/physio_regressors_details.mat', subjdir), order)
+        save(sprintf('%s/physio_regressors_details.mat', subjdir), 'order')
     end
 end
 
