@@ -1,7 +1,7 @@
-% Script to set the experiment-specific pamareters for the first and 
+% Script to set the experiment-specific pamareters for the first and
 % level analysis of fMRI data.
 
-% For the batch system to work properly, a specific folder organization, 
+% For the batch system to work properly, a specific folder organization,
 % with particular names, is required.
 % Starting from the root directory:
 %   datadir/
@@ -18,8 +18,8 @@
 %       |_ MutliCond/               => where regressors & contrast specification is saved
 %       |_ preprocAnat/             => preprocessed anatomy (for visualization)
 %       |_ preprocEPI/              => preprocessed EPIs, movement parameters and SliceTimingInfo.mat
-% 
-% 
+%
+%
 
 % Specification of parameters
 % =========================================================================
@@ -34,15 +34,15 @@ sublist           = [1:11];
 
 % Actions to perform
 % Possible actions are: 'specify', 'estimate', 'contrast', 'smooth', 'rfx_ttest', 'run'
-% Note that 'run' runs the specified batched (without 'run', the batch is simply saved)
-% 'specify', 'estimate' and 'contrast' are implemented fmspm12batch_1st_level
-% 'smooth' and 'rfx_ttest' are implemented by fmspm12batch_2nd_level
+% Note that 'run' runs the specified batch (without 'run', the batch is simply saved)
+% 'specify', 'estimate' and 'contrast' are implemented with fmspm12batch_1st_level
+% 'smooth' and 'rfx_ttest' are implemented with fmspm12batch_2nd_level
 actions           = {'rfx_ttest', 'run'};
 
 % locate the data
 spm_path          = '/volatile/meyniel/toolbox/matlab/spm12';
 datadir           = '/neurospin/unicog/protocols/IRMf/Meyniel_MarkovGuess_2014/MRI_data/analyzed_data';
-regexp_func       = '^sw.*\.nii';                     % regular expression to recognize functional sessions to analyze 
+regexp_func       = '^sw.*\.nii';                     % regular expression to recognize functional sessions to analyze
 funcdir           = 'preprocEPI';                     % name of the folder containing EPI
 
 
@@ -50,7 +50,7 @@ funcdir           = 'preprocEPI';                     % name of the folder conta
 
 % temporal basis function to use.
 % 'hrf', 'hrf+deriv', 'hrf+2derivs', 'fir', 'fourier'
-bases_functions   = 'hrf+deriv'; 
+bases_functions   = 'hrf+deriv';
 
 % Delete previous contrast (1 for yes, 0 for no)
 deleteprevcon     = 1;
@@ -62,11 +62,11 @@ refslice          = 1;
 
 % Mask (leave empty quotes '' to have no masking)
 % spm_path/tpm/mask_ICV.nii,1 is a normalized, in-brain mask.
-mask              = sprintf('%s/tpm/mask_ICV.nii,1', spm_path); 
+mask              = sprintf('%s/tpm/mask_ICV.nii,1', spm_path);
 
 % Inclusion of physiological artifacts as co-variates
 % The cardiac and respiratory phases (and interactions) can be included at
-% various order: this is the standard RETROICOR correction. In addition,
+% various orders: this is the standard RETROICOR correction. In addition,
 % the heart rate variability (HR) and respiratory volume per time (RVT) may
 % also be included. Regressors were used using TAPAS during the
 % preprocessing step.
@@ -78,13 +78,13 @@ physiocorr.opt.order_interaction = 1;
 
 % ----- 2nd level paramters -----
 
-% List of contrast computed. The number of the contrasts are as can be read
-% in 1st level SPM.mat. 
+% List of contrast computed. The number of the contrasts are as they can be
+% read in 1st level SPM.mat.
 % To compute all contrasts, leave an empty vector []
 con_list          = [1 3 4];
 
 % smoothing kernel for the 2nd level
-smoothing_kernel2 = [6 6 6]; 
+smoothing_kernel2 = [6 6 6];
 
 % type of 1st level contrast should be taken into the 2nd level analysis
 % 'con' or 'scon' for unsmoothed & smoothed contrast
@@ -111,8 +111,13 @@ modelname = fname(1:end-10); % assume that file name is in the form modelname_pa
 nSub = length(sublist);
 TR   = zeros(1, nSub);
 for iSub = 1:nSub
-    dat = load(sprintf('%s/subj%02.0f/preprocEPI/SliceTimingInfo.mat', datadir, sublist(iSub)));
-    TR(iSub) = dat.TR; 
+    fname = sprintf('%s/subj%02.0f/%s/SliceTimingInfo.mat', datadir, sublist(iSub), funcdir);
+    if ~exist(fname, 'file')
+        error('could not find the mat file with acquisition parameters at %s', fname)
+    else
+        dat = load(fname);
+    end
+    TR(iSub) = dat.TR;
 end
 
 % Check wether all participants have the same TR
@@ -136,11 +141,11 @@ if useparallel.do && isunix
     [~, w] = unix('nproc');
     Ncpu = str2num(w);
     if Nopen > Ncpu
-	fprintf('\n ***************************************************')
-	fprintf('\n 	              WARNING                          ')
-	fprintf('\n     There are more Matlab (%d) than cores (%d)     ', Nopen, Ncpu)
-	fprintf('\n   The parallelization is likely to be inefficient  ')
-	fprintf('\n ***************************************************')
-	fprintf('\n')
+        fprintf('\n ***************************************************')
+        fprintf('\n 	              WARNING                          ')
+        fprintf('\n     There are more Matlab (%d) than cores (%d)     ', Nopen, Ncpu)
+        fprintf('\n   The parallelization is likely to be inefficient  ')
+        fprintf('\n ***************************************************')
+        fprintf('\n')
     end
 end
