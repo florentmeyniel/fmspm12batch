@@ -77,6 +77,8 @@ modeldir = sprintf('%sfirst_level_estimates/%s', subjdir, modelname);
 % GET THE MOVEMENT PARAMETER FILES
 % the prefix of these files
 try
+    % try to retrieve the original prefix. In principle, it should have
+    % been save at the realignement step during pre-processing.
     tmp = load([fdir, '/original_epi_prefix.mat']);
     orig_regexp_func = tmp.regexp_func;
     str_start = strfind(orig_regexp_func, '^');
