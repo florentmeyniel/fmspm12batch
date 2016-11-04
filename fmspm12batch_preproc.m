@@ -163,7 +163,8 @@ if ismember('topup', actions)
 end
 
 % RUN ALL STEPS EXCEPT TOPUP
-if ~ismember('topup', actions) && ~ismember('AddTopupStep', actions)
+if ~ismember('topup', actions) && ~ismember('AddTopupStep', actions) ...
+        && ~isempty(setdiff(actions, {'retroicor', 'run'}))
     
     fprintf('\n Create batch for PREPROCESSING')
     matfile = cell(nSub, 1); % full path of saved job
