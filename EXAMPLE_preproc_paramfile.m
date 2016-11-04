@@ -77,7 +77,7 @@ topupOptions.par.estimatemax = 6;                   % limit parallel process for
 topupOptions.par.applymax    = 3;                   % limit parallel process for apply (take lots of RAM)
 
 % Retroicor options
-retroicorOptions.toolbox     = '/volatile/meyniel/tapasinstructions/PhysIO/'; % path to TAPAS toolbox
+retroicorOptions.toolbox     = '/volatile/meyniel/toolbox/matlab/PhysIO/'; % path to TAPAS toolbox
 
 % Retroicor options for advanced users
 retroicorOptions.verbose     = 0; % 0 = none; 1 = main plots (default);  2 = debugging plots, for setting up new study; 3 = all
