@@ -21,7 +21,7 @@ With the help of the fmspm12batch
 		> resolution [1.5 1.5 1.5]
 	ii) extract surface: Render > Extract Surface
 
-NB: the routine retreive most acquisition parameters (TR, slice timing ...) automatically, from the DICOM header. 
+NB: the routine retreives most acquisition parameters (TR, slice timing ...) automatically, from the DICOM header. 
 
 3rd step: first level analysis
 ==============================

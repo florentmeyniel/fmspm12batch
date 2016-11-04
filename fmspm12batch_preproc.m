@@ -54,6 +54,7 @@ if ~strcmp(paramfile, 'RecursiveMode')
     param.nSub                      = nSub;
     param.useparallel               = useparallel;
     param.topupOptions              = topupOptions;        % specific options for Topup
+    param.blipdir                   = blipdir;             % phase encoding direction of EPI images
     
     param.flscmd                    = flscmd;
     

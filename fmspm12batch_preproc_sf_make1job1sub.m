@@ -29,6 +29,7 @@ slice_timing            = param.slice_timing;
 B0_TE                   = param.B0_TE;                  % short and long TE, in ms, of the B0 acquisition.
 flscmd                  = param.flscmd;                 % fls command use to call fsl function, e.g. fsl5.0-fslroi
 total_readout_time_spm  = param.total_readout_time_spm; % effective readout time of EPIs
+blipdir                 = param.blipdir;                % phase encoding direction of EPI images
 
 actions                 = param.actions;
 
@@ -139,14 +140,14 @@ if ismember('unwarp', actions)
     unix(cmd)
     
     % convert these files to nii
-    unix(sprintf('cd %s; fsl5.0-fslchfiletype NIFTI B0_mag_shortTE_%s'  , ...
-        [fdir, 'B0'], fname_B0mag(8:end)))
-    unix(sprintf('cd %s; fsl5.0-fslchfiletype NIFTI B0_mag_longTE_%s'   , ...
-        [fdir, 'B0'], fname_B0mag(8:end)))
-    unix(sprintf('cd %s; fsl5.0-fslchfiletype NIFTI B0_phase_shortTE_%s', ...
-        [fdir, 'B0'], fname_B0phase(10:end)))
-    unix(sprintf('cd %s; fsl5.0-fslchfiletype NIFTI B0_phase_longTE_%s' , ...
-        [fdir, 'B0'], fname_B0phase(10:end)))
+    unix(sprintf('cd %s; %s-fslchfiletype NIFTI B0_mag_shortTE_%s'  , ...
+        [fdir, 'B0'], flscmd, fname_B0mag(8:end)))
+    unix(sprintf('cd %s; %s-fslchfiletype NIFTI B0_mag_longTE_%s'   , ...
+        [fdir, 'B0'], flscmd, fname_B0mag(8:end)))
+    unix(sprintf('cd %s; %s-fslchfiletype NIFTI B0_phase_shortTE_%s', ...
+        [fdir, 'B0'], flscmd, fname_B0phase(10:end)))
+    unix(sprintf('cd %s; %s-fslchfiletype NIFTI B0_phase_longTE_%s' , ...
+        [fdir, 'B0'], flscmd, fname_B0phase(10:end)))
     
     % get names of files
     fname_shortmag   = spm_select('FPList', [fdir, '/B0'], '^B0_mag_shortTE.*\.nii');
@@ -164,7 +165,7 @@ if ismember('unwarp', actions)
     subj.longmag                                = {fname_longmag};
     subj.defaults.defaultsval.et                = B0_TE;                    % [shortTE longTE] in ms
     subj.defaults.defaultsval.maskbrain         = 1;
-    subj.defaults.defaultsval.blipdir           = 1;                        % +1 for P -> A (would be -1 for A -> P)
+    subj.defaults.defaultsval.blipdir           = blipdir;                  % +1 for P -> A (would be -1 for A -> P)
     subj.defaults.defaultsval.tert              = total_readout_time_spm;   % EPI readout time
     subj.defaults.defaultsval.epifm             = 0;                        % 0: fieldmap is not an EPI image (it is a gradiant echo)
     subj.defaults.defaultsval.ajm               = 0;                        % no jacobian modulation (as recommanded by SPM)

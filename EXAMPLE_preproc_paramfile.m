@@ -50,7 +50,7 @@ nSub             = length(sublist);
 % the batch {'run', realign', 'segmentnormalize'} can start from there by
 % specifying regexp_func = '^aepi.*\.nii';
 % The order of arguments does not matter.
-actions          = {'run', 'slicetiming', 'realign', 'topup', 'segmentnormalize', 'smooth'};
+actions          = {'run', 'retroicor', 'slicetiming', 'realign', 'topup', 'segmentnormalize', 'smooth'};
 
 % Locate the data
 spm_path         = '/volatile/meyniel/toolbox/matlab/spm12';
@@ -63,17 +63,18 @@ anatdir          =  'anat';                         % path of anatomical image w
 regexp_topupref  = '^raepi_sess1_.*\.nii';          % functional session onto which field map files are aligned
 
 % acquisition parameters
-B0_TE            = [];                               % short and long TE, in ms, of the B0 acquisition. (leave empty if no BO file)
+B0_TE            = [];                              % short and long TE, in ms, of the B0 acquisition. (leave empty if no BO file)
+blipdir          = 1;                               % phase encoding direction of EPI images (e.g. +1 if P->A; -1 is A->P)
 
 % pre-processing parameters
-smoothing_kernel = [5 5 5];                          % 1st level smoothing
+smoothing_kernel = [5 5 5];                         % 1st level smoothing
 
 % Topup options
-topupOptions.do_realign      = 1;                     % realign AP/PA file onto reference EPI
-topupOptions.do_estimate     = 1;                     % estimate the deformation field map
-topupOptions.do_apply        = 1;                     % apply unwrapping
-topupOptions.par.estimatemax = 6;                     % limit parallel process for estimate
-topupOptions.par.applymax    = 3;                     % limit parallel process for apply (take lots of RAM)
+topupOptions.do_realign      = 1;                   % realign AP/PA file onto reference EPI
+topupOptions.do_estimate     = 1;                   % estimate the deformation field map
+topupOptions.do_apply        = 1;                   % apply unwrapping
+topupOptions.par.estimatemax = 6;                   % limit parallel process for estimate
+topupOptions.par.applymax    = 3;                   % limit parallel process for apply (take lots of RAM)
 
 % Retroicor options
 retroicorOptions.toolbox     = '/volatile/meyniel/tapasinstructions/PhysIO/'; % path to TAPAS toolbox
@@ -196,7 +197,7 @@ end
 % get that actions are recognized
 actions = lower(actions);
 for iAction = 1:numel(actions)
-    if ~ismember(actions{iAction}, {'run', 'slicetiming', 'realign', 'unwarp', 'topup', 'segmentnormalize', 'smooth'})
+    if ~ismember(actions{iAction}, {'run', 'retroicor', 'slicetiming', 'realign', 'unwarp', 'topup', 'segmentnormalize', 'smooth'})
         error('action ''%s'' not recognized', actions{iAction})
     end
 end
