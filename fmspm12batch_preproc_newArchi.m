@@ -6,7 +6,7 @@ function fmspm12batch_preproc_newArchi(paramfile)
 % syntax: fmspm12batch_preproc_newArchi(paramfile)
 
 % Get the parameters
-eval(paramfile);
+eval([paramfile, '_paramfile']);
 
 % Make the directory where data to analyzed are located
 ind = strfind(datadir, 'raw_data');
@@ -36,10 +36,14 @@ for iSub = 1:length(sublist)
     % side information: slice timing & movement parameters
     % ====================================================
     % Slice timing info
-    copyfile([orign_subjdir, 'SliceTimingInfo.mat'], [target_subjdir, 'SliceTimingInfo.mat'])
+    if exist([orign_subjdir, 'SliceTimingInfo.mat'], 'file')
+        copyfile([orign_subjdir, 'SliceTimingInfo.mat'], [target_subjdir, 'SliceTimingInfo.mat'])
+    end
     
     % orginial nifti prefix
-    copyfile([orign_subjdir, 'original_epi_prefix.mat'], [target_subjdir, 'original_epi_prefix.mat'])
+    if exist([orign_subjdir, 'original_epi_prefix.mat'], 'file')
+        copyfile([orign_subjdir, 'original_epi_prefix.mat'], [target_subjdir, 'original_epi_prefix.mat'])
+    end
 
     % TAPAS parameters
     try
