@@ -209,7 +209,7 @@ matlabbatch{1}.spm.stats.fmri_spec.fact 			= struct('name', {}, 'levels', {});
 matlabbatch{1}.spm.stats.fmri_spec.bases.hrf.derivs = basisfunc;
 matlabbatch{1}.spm.stats.fmri_spec.volt 			= 1;
 matlabbatch{1}.spm.stats.fmri_spec.global 			= 'None';
-matlabbatch{1}.spm.stats.fmri_spec.mthresh 			= spm_get_defaults('mask.thresh');
+matlabbatch{1}.spm.stats.fmri_spec.mthresh 			= 0; % spm_get_defaults('mask.thresh') is 0.8
 matlabbatch{1}.spm.stats.fmri_spec.mask 			= {mask};
 matlabbatch{1}.spm.stats.fmri_spec.cvi 				= spm_get_defaults('stats.fmri.cvi');
 
