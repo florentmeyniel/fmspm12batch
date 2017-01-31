@@ -121,7 +121,8 @@ PixelSpacing = hdr{1}.PixelSpacing; % [x, y] resolution in mm
 
 % get number of voxel in the encoding direction
 nVx = hdr{1}.Private_0051_100b;
-nVx = str2double(nVx(1:(strfind(nVx, '*')-1)));
+nVx = nVx(1:(strfind(nVx, '*')-1)); % return first part, before the *
+nVx = str2double(regexp(nVx, '^\d+', 'match')); % return the digit element there (ignore letter, if any)
 
 % get "Bandwidth per pixel phase encode" in Hz
 BW = hdr{1}.Private_0019_1028;
