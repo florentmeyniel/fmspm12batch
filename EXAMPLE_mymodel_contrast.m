@@ -174,8 +174,8 @@ for iSub = 1:length(sublist)
     fname = sprintf('%s/subj%02.0f/MultiCond/%s_contrast.mat', ...
         irm_dir, sublist(iSub), locmodelname);
     
-    if ~exist(sprintf('%s/subj%02.0f/MultiCond/%s.mat', irm_dir, sublist(iSub)))
-        mkdir(sprintf('%s/subj%02.0f/MultiCond/%s.mat', irm_dir, sublist(iSub)))
+    if ~exist(sprintf('%s/subj%02.0f/MultiCond/', irm_dir, sublist(iSub)))
+        mkdir(sprintf('%s/subj%02.0f/MultiCond/', irm_dir, sublist(iSub)))
     end
     save(fname, 'names', 'type', 'values')
 end
