@@ -41,6 +41,11 @@ if ~strcmp(paramfile, 'RecursiveMode')
     dataloc.funcdir                 = funcdir;             % path of fMRI data (4D nifti) within subject directory
     dataloc.anatdir                 = anatdir;             % path of anatomical image within subject directory
     dataloc.regexp_topupref         = regexp_topupref;     % regular expression to recognize the functional to realign the field maps files.
+    if ~exist('topup_root_name', 'var')
+        topup_root_name             = 'ep2d';              % default value for backward compatibility
+    else
+        dataloc.topup_root_name     = topup_root_name;     % the AP/PA files for topup are named 'topup_root_name_AP*.nii' 'topup_root_name_PA*.nii'
+    end
     
     param.TR                        = TR;                  % acquisition TR
     param.nslices                   = nslices;             % number of slices
@@ -242,6 +247,7 @@ if ismember('AddTopupStep', actions)
         funcdir                 = dataloc.funcdir;
         spm_path                = dataloc.spm_path;
         regexp_topupref         = dataloc.regexp_topupref;
+        topup_root_name         = dataloc.topup_root_name;
         total_readout_time_fsl  = param.total_readout_time_fsl;
         regexp_func             = dataloc.regexp_func;
         topupOptions            = param.topupOptions;
@@ -253,7 +259,7 @@ if ismember('AddTopupStep', actions)
             fpath{iSub} = sprintf('%s/batch_specif_sub%02.0f_TopupCorrection.mat', ...
                 pwd, sublist(iSub));
             SubNum = sublist(iSub);
-            save(fpath{iSub}, 'SubNum', 'datadir', 'funcdir', 'regexp_func', ...
+            save(fpath{iSub}, 'SubNum', 'datadir', 'funcdir', 'regexp_func', 'topup_root_name', ...
                 'spm_path', 'regexp_topupref', 'total_readout_time_fsl', 'topupOptions');
         end
         

@@ -14,6 +14,7 @@ regexp_func             = sp.regexp_func;
 regexp_topupref         = sp.regexp_topupref;
 total_readout_time_fsl  = sp.total_readout_time_fsl;
 topupOptions            = sp.topupOptions;
+topup_root_name         = sp.topup_root_name;
 
 % Get the specific info on this subject
 % initialization
@@ -29,8 +30,8 @@ fdir =  sprintf('%s%s/', subjdir, funcdir);
 
 % Identify the AP PA file for calibrating the deformation, with the nii
 % extention ,1
-B0_AP = spm_select('ExtFPList', fdir, '^ep2d_AP_.*\.nii', 1);
-B0_PA = spm_select('ExtFPList', fdir, '^ep2d_PA_.*\.nii', 1);
+B0_AP = spm_select('ExtFPList', fdir, ['^', topup_root_name, '_AP_.*\.nii'], 1);
+B0_PA = spm_select('ExtFPList', fdir, ['^', topup_root_name, '_PA_.*\.nii'], 1);
 
 % Identify the 1st session, after the unwrapping step
 EPIref = spm_select('ExtFPList', fdir, regexp_topupref, 1);

@@ -61,6 +61,7 @@ regexp_anat      = '^anat.*\.nii';                  % regular expression to reco
 funcdir          =  'fMRI';                         % path of fMRI data (4D nifti) within subject directory
 anatdir          =  'anat';                         % path of anatomical image within subject directory
 regexp_topupref  = '^raepi_sess1_.*\.nii';          % functional session onto which field map files are aligned
+topup_root_name  = 'ep2d';                          % the AP/PA files for topup are named 'topup_root_name_AP*.nii' 'topup_root_name_PA*.nii'
 
 % acquisition parameters
 B0_TE            = [];                              % short and long TE, in ms, of the B0 acquisition. (leave empty if no BO file)
