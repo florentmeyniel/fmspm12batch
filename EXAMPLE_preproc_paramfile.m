@@ -74,6 +74,7 @@ smoothing_kernel = [5 5 5];                         % 1st level smoothing
 topupOptions.do_realign      = 1;                   % realign AP/PA file onto reference EPI
 topupOptions.do_estimate     = 1;                   % estimate the deformation field map
 topupOptions.do_apply        = 1;                   % apply unwrapping
+topupOptions.is_realigned    = 1;                   % work with realigned AP/PA files (1) or native ones (0)
 topupOptions.par.estimatemax = 6;                   % limit parallel process for estimate
 topupOptions.par.applymax    = 3;                   % limit parallel process for apply (take lots of RAM)
 

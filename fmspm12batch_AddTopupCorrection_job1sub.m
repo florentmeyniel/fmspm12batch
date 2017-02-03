@@ -70,9 +70,11 @@ end
 % ESTIMATE THE DEFORMATION MAP WITH FSL & TOPUP
 % =========================================================================
 if topupOptions.do_estimate == 1
-    % Merge the realigned AP & PA nii files in the same file with .nii.gz format
-    B0_AP = spm_select('List', fdir, '^rep2d_AP_.*\.nii');
-    B0_PA = spm_select('List', fdir, '^rep2d_PA_.*\.nii');
+    % Merge the (realigned or native) AP & PA nii files in the same file with .nii.gz format
+    prefix = 'r'; 
+    if isfield(topupOptions, 'is_realigned') && topupOptions.is_realigned == 0 ;prefix = ''; end
+    B0_AP = spm_select('List', fdir, ['^', prefix, topup_root_name, '_AP_.*\.nii']);
+    B0_PA = spm_select('List', fdir, ['^', prefix, topup_root_name, '_PA_.*\.nii']);
     cmd = sprintf('cd %s; fsl5.0-fslmerge -t b0_APPA %s %s', ...
         fdir, B0_AP(1:end-4), B0_PA(1:end-4));
     unix(cmd)
