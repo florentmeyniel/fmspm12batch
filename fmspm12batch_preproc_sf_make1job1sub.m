@@ -285,6 +285,9 @@ if ismember('realign', actions)
     
     matlabbatch{stage}.spm.spatial.realign.estwrite = estwrite;
     
+    % save the functional file prefix. It will be needed later to identify
+    % the movement parameter file.
+    save([fdir, '/original_epi_prefix.mat'], 'regexp_func')
 end
 
 % =========================================================================
