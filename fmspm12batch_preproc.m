@@ -43,10 +43,8 @@ if ~strcmp(paramfile, 'RecursiveMode')
     dataloc.regexp_topupref         = regexp_topupref;     % regular expression to recognize the functional to realign the field maps files.
     if ~exist('topup_root_name', 'var')
         topup_root_name             = 'ep2d';              % default value for backward compatibility
-    else
-        dataloc.topup_root_name     = topup_root_name;     % the AP/PA files for topup are named 'topup_root_name_AP*.nii' 'topup_root_name_PA*.nii'
     end
-    
+    dataloc.topup_root_name         = topup_root_name;     % the AP/PA files for topup are named 'topup_root_name_AP*.nii' 'topup_root_name_PA*.nii'
     param.TR                        = TR;                  % acquisition TR
     param.nslices                   = nslices;             % number of slices
     param.slice_timing              = slice_timing;        % exact slice timing
